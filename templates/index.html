@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastMedia - 媒体处理工具</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f7f7f5;
+            color: #37352f;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 0;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #2d2d2d;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #6b6b6b;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e9e9e7;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .feature-card.active {
+            border-color: #2383e2;
+            box-shadow: 0 4px 16px rgba(35, 131, 226, 0.15);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .feature-icon i {
+            color: white;
+            font-size: 20px;
+        }
+
+        .feature-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #2d2d2d;
+        }
+
+        .feature-description {
+            color: #6b6b6b;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e9e9e7;
+            margin-bottom: 24px;
+            display: none;
+        }
+
+        .input-section.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        .input-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #2d2d2d;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e9e9e7;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+            background: #fafafa;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #2383e2;
+            background: white;
+        }
+
+        .textarea-field {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .file-upload {
+            border: 2px dashed #e9e9e7;
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            transition: border-color 0.2s ease;
+            cursor: pointer;
+        }
+
+        .file-upload:hover {
+            border-color: #2383e2;
+        }
+
+        .file-upload.dragover {
+            border-color: #2383e2;
+            background-color: #f0f7ff;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f1f1ef;
+            color: #37352f;
+        }
+
+        .btn-secondary:hover {
+            background: #e9e9e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e9e9e7;
+            margin-top: 24px;
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        .result-item {
+            padding: 16px;
+            border: 1px solid #e9e9e7;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background: #fafafa;
+        }
+
+        .result-item.success {
+            border-color: #4caf50;
+            background: #f1f8e9;
+        }
+
+        .result-item.error {
+            border-color: #f44336;
+            background: #ffebee;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2383e2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e9e9e7;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-card {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>FastMedia</h1>
+            <p>基于Python的媒体处理库，提供视频下载、BGM提取、文案提取、水印添加、封面提取等功能</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card" data-feature="download">
+                <div class="feature-icon">
+                    <i class="fas fa-download"></i>
+                </div>
+                <div class="feature-title">批量视频下载</div>
+                <div class="feature-description">支持抖音、TikTok、B站、YouTube、Twitter、快手等平台的无水印视频下载</div>
+            </div>
+
+            <div class="feature-card" data-feature="bgm">
+                <div class="feature-icon">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="feature-title">BGM提取</div>
+                <div class="feature-description">从视频中提取背景音乐，支持多种音频格式输出</div>
+            </div>
+
+            <div class="feature-card" data-feature="text">
+                <div class="feature-icon">
+                    <i class="fas fa-file-text"></i>
+                </div>
+                <div class="feature-title">文案提取</div>
+                <div class="feature-description">提取视频标题、描述、字幕等文字内容</div>
+            </div>
+
+            <div class="feature-card" data-feature="watermark">
+                <div class="feature-icon">
+                    <i class="fas fa-stamp"></i>
+                </div>
+                <div class="feature-title">添加水印</div>
+                <div class="feature-description">为视频添加文字或图片水印，支持多种位置和样式</div>
+            </div>
+
+            <div class="feature-card" data-feature="thumbnail">
+                <div class="feature-icon">
+                    <i class="fas fa-image"></i>
+                </div>
+                <div class="feature-title">封面提取</div>
+                <div class="feature-description">提取视频封面或指定时间点的帧图像</div>
+            </div>
+        </div>
+
+        <!-- 视频下载 -->
+        <div class="input-section" id="download-section">
+            <h3>批量视频下载</h3>
+            <div class="input-group">
+                <label class="input-label">视频URL（用逗号分隔）</label>
+                <textarea class="input-field textarea-field" id="download-urls" placeholder="请输入视频URL，多个URL用逗号分隔\n例如：https://www.douyin.com/video/xxx, https://www.youtube.com/watch?v=xxx"></textarea>
+            </div>
+            <button class="btn" onclick="processVideos('download')">开始下载</button>
+        </div>
+
+        <!-- BGM提取 -->
+        <div class="input-section" id="bgm-section">
+            <h3>BGM提取</h3>
+            <div class="input-group">
+                <label class="input-label">视频URL（用逗号分隔）</label>
+                <textarea class="input-field textarea-field" id="bgm-urls" placeholder="请输入视频URL，多个URL用逗号分隔"></textarea>
+            </div>
+            <button class="btn" onclick="processVideos('bgm')">提取BGM</button>
+        </div>
+
+        <!-- 文案提取 -->
+        <div class="input-section" id="text-section">
+            <h3>文案提取</h3>
+            <div class="input-group">
+                <label class="input-label">视频URL（用逗号分隔）</label>
+                <textarea class="input-field textarea-field" id="text-urls" placeholder="请输入视频URL，多个URL用逗号分隔"></textarea>
+            </div>
+            <button class="btn" onclick="processVideos('text')">提取文案</button>
+        </div>
+
+        <!-- 水印添加 -->
+        <div class="input-section" id="watermark-section">
+            <h3>添加水印</h3>
+            <div class="input-group">
+                <label class="input-label">视频URL（用逗号分隔）</label>
+                <textarea class="input-field textarea-field" id="watermark-urls" placeholder="请输入视频URL，多个URL用逗号分隔"></textarea>
+            </div>
+            <div class="input-group">
+                <label class="input-label">水印文字</label>
+                <input type="text" class="input-field" id="watermark-text" placeholder="输入水印文字（可选）">
+            </div>
+            <div class="input-group">
+                <label class="input-label">水印图片</label>
+                <div class="file-upload" id="watermark-upload">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 24px; color: #6b6b6b; margin-bottom: 8px;"></i>
+                    <p>点击或拖拽上传水印图片</p>
+                    <input type="file" id="watermark-file" accept="image/*" style="display: none;">
+                </div>
+            </div>
+            <button class="btn" onclick="processVideos('watermark')">添加水印</button>
+        </div>
+
+        <!-- 封面提取 -->
+        <div class="input-section" id="thumbnail-section">
+            <h3>封面提取</h3>
+            <div class="input-group">
+                <label class="input-label">视频URL（用逗号分隔）</label>
+                <textarea class="input-field textarea-field" id="thumbnail-urls" placeholder="请输入视频URL，多个URL用逗号分隔"></textarea>
+            </div>
+            <div class="input-group">
+                <label class="input-label">时间点（秒）</label>
+                <input type="number" class="input-field" id="thumbnail-timestamp" value="0" min="0" placeholder="提取指定时间点的帧，0表示第一帧">
+            </div>
+            <button class="btn" onclick="processVideos('thumbnail')">提取封面</button>
+        </div>
+
+        <!-- 加载状态 -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>处理中，请稍候...</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+
+        <!-- 结果显示 -->
+        <div class="results-section" id="results">
+            <h3>处理结果</h3>
+            <div id="results-content"></div>
+        </div>
+
+        <!-- 提示信息 -->
+        <div class="alert" id="alert">
+            <span id="alert-message"></span>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

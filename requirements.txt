@@ -1,0 +1,7 @@
+Flask==2.3.3
+yt-dlp
+Pillow
+requests
+loguru
+python-dotenv
+Flask-CORS
