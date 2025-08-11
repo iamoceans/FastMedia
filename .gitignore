@@ -2,3 +2,4 @@ downloads/*
 logs/*
 testCase.txt
 test/
+.$*
