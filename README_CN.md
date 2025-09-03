@@ -77,12 +77,6 @@ python run.py
 - **生产环境**: `ProductionConfig`
 - **测试环境**: `TestingConfig`
 
-## 📱 Web界面
-
-FastMedia 提供简洁现代的Web界面，参考Notion设计风格：
-
-![界面预览](./menu.png)
-
 ### 界面功能模块
 
 #### 📥 任务输入区

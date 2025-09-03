@@ -77,12 +77,6 @@ The project supports multi-environment configuration, adjustable in `config.py`:
 - **Production Environment**: `ProductionConfig`
 - **Testing Environment**: `TestingConfig`
 
-## 📱 Web Interface
-
-FastMedia provides a clean and modern web interface, inspired by Notion's design:
-
-![Interface Preview](./menu.png)
-
 ### Interface Modules
 
 #### 📥 Task Input Area
