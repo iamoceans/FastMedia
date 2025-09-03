@@ -1,6 +1,6 @@
 # FastMedia
 
-🎬 **FastMedia** is a powerful media processing platform built on Flask framework, providing comprehensive video processing services. It supports multi-platform video downloading, BGM extraction, text extraction, watermark addition, and thumbnail generation.
+🎬 **FastMedia** is a powerful media processing platform built on Flask framework, providing comprehensive video processing services. It supports multi-platform video downloading, BGM extraction, and thumbnail generation.
 
 ## ✨ Core Features
 
@@ -16,17 +16,7 @@
 - **Batch Processing**: Simultaneous BGM extraction from multiple videos
 - **Platform Compatibility**: Support for all mainstream video platforms
 
-### 📝 Batch Video Text Extraction
-- **Smart Recognition**: Automatic extraction of video titles and descriptions
-- **Multi-language Support**: Support for Chinese, English, and other languages
-- **Structured Output**: JSON format structured text data
-- **Batch Export**: Support for batch text extraction and export
 
-### 🖼️ Batch Video Watermark Addition
-- **Watermark Types**: Support for text and image watermarks
-- **Position Control**: Customizable watermark position (bottom-right as default)
-- **Opacity Adjustment**: Support for 0.8 default opacity, customizable
-- **Size Control**: Smart scaling, 0.1 ratio by default
 
 ### 🖼️ Batch Video Thumbnail Extraction
 - **Multiple Modes**: Support for extracting first frame or specific timestamp frames
@@ -39,16 +29,16 @@
 ### Backend Tech Stack
 - **Framework**: Flask 2.3.3 - Lightweight web framework
 - **Video Processing**: yt-dlp - Powerful video download tool
+- **Video Editing**: MoviePy - Video processing and editing
 - **Image Processing**: Pillow - Python image processing library
 - **Logging System**: loguru - Modern logging
 - **HTTP Requests**: requests - Simple HTTP library
 - **CORS Support**: Flask-CORS - Cross-origin resource sharing
+- **Environment**: python-dotenv - Environment variable management
 
 ### Core Service Modules
 - `VideoDownloader` - Video download service
 - `BGMExtractor` - BGM extraction service
-- `TextExtractor` - Text extraction service
-- `WatermarkAdder` - Watermark addition service
 - `ThumbnailExtractor` - Thumbnail extraction service
 - `KuaishouDownloader` - Kuaishou-specific downloader
 
@@ -73,7 +63,7 @@ pip install -r requirements.txt
 
 3. **Start the Service**
 ```bash
-python app.py
+python run.py
 ```
 
 4. **Access the Application**
@@ -96,7 +86,7 @@ FastMedia provides a clean and modern web interface, inspired by Notion's design
 ### Interface Modules
 
 #### 📥 Task Input Area
-- **Function Selection**: Dropdown menu for processing type selection (Download/BGM/Text/Watermark/Thumbnail)
+- **Function Selection**: Dropdown menu for processing type selection (Download/BGM/Thumbnail)
 - **URL Input**: Multi-line text box supporting batch URL list pasting
 - **Parameter Configuration**: Dynamic display of relevant configuration options based on selected function
 
@@ -140,28 +130,7 @@ Content-Type: application/json
 }
 ```
 
-### Text Extraction
-```http
-POST /api/extract_text
-Content-Type: application/json
 
-{
-  "urls": "https://example.com/video1,https://example.com/video2"
-}
-```
-
-### Watermark Addition
-```http
-POST /api/add_watermark
-Content-Type: application/json
-
-{
-  "urls": "https://example.com/video1",
-  "watermark_type": "text",
-  "watermark_text": "@YourBrand",
-  "position": "bottom-right"
-}
-```
 
 ### Thumbnail Extraction
 ```http
@@ -193,25 +162,26 @@ FastMedia/
 ├── config.py             # Configuration file
 ├── requirements.txt      # Dependencies list
 ├── run.py               # Startup script
+├── utils.py             # Utility functions
 ├── services/            # Core service modules
+│   ├── __init__.py
 │   ├── video_downloader.py
 │   ├── bgm_extractor.py
-│   ├── text_extractor.py
-│   ├── watermark_adder.py
 │   ├── thumbnail_extractor.py
 │   └── kuaishou_downloader.py
 ├── static/              # Static resources
 │   ├── css/
+│   │   └── style.css
 │   └── js/
+│       └── main.js
 ├── templates/           # HTML templates
+│   └── index.html
 ├── downloads/           # Downloaded files storage
 │   ├── videos/
 │   ├── bgm/
-│   ├── texts/
-│   ├── watermarked/
 │   └── thumbnails/
-├── uploads/             # Temporary upload storage
 └── logs/               # Log files
+    └── fastmedia.log
 ```
 
 ## ⚠️ Important Notes

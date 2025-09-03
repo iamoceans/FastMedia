@@ -14,229 +14,267 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f7f7f5;
+            background-color: #fafafa;
             color: #37352f;
             line-height: 1.6;
+            font-size: 14px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 40px 20px;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 40px;
-            padding: 40px 0;
+            margin-bottom: 60px;
+            padding: 20px 0;
         }
 
         .header h1 {
-            font-size: 3rem;
+            font-size: 2.5rem;
             font-weight: 700;
             color: #2d2d2d;
-            margin-bottom: 10px;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
         }
 
         .header p {
-            font-size: 1.2rem;
-            color: #6b6b6b;
+            font-size: 1.1rem;
+            color: #787774;
             max-width: 600px;
             margin: 0 auto;
+            line-height: 1.5;
         }
 
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
             margin-bottom: 40px;
         }
 
         .feature-card {
-            background: white;
-            border-radius: 12px;
-            padding: 32px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 28px;
             border: 1px solid #e9e9e7;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             cursor: pointer;
+            position: relative;
         }
 
         .feature-card:hover {
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            border-color: #2383e2;
+            box-shadow: 0 8px 25px rgba(45, 45, 45, 0.1);
             transform: translateY(-2px);
         }
 
         .feature-card.active {
             border-color: #2383e2;
-            box-shadow: 0 4px 16px rgba(35, 131, 226, 0.15);
+            background: #f8f9fa;
+            box-shadow: 0 0 0 1px rgba(35, 131, 226, 0.1);
         }
 
         .feature-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 12px;
+            width: 40px;
+            height: 40px;
+            background: #2383e2;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .feature-icon i {
             color: white;
-            font-size: 20px;
+            font-size: 18px;
         }
 
         .feature-title {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             font-weight: 600;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             color: #2d2d2d;
         }
 
         .feature-description {
-            color: #6b6b6b;
-            font-size: 0.95rem;
-            line-height: 1.5;
+            color: #787774;
+            font-size: 0.9rem;
+            line-height: 1.4;
         }
 
         .input-section {
-            background: white;
-            border-radius: 12px;
-            padding: 32px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 28px;
             border: 1px solid #e9e9e7;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             display: none;
         }
 
         .input-section.active {
             display: block;
+            animation: fadeIn 0.2s ease;
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-section h3 {
+             color: #2d2d2d;
+             font-size: 1.1rem;
+             font-weight: 600;
+             margin-bottom: 20px;
+         }
+
         .input-group {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         .input-label {
             display: block;
             font-weight: 500;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: #2d2d2d;
+            font-size: 0.9rem;
         }
 
         .input-field {
             width: 100%;
-            padding: 12px 16px;
+            padding: 10px 14px;
             border: 1px solid #e9e9e7;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 14px;
-            transition: border-color 0.2s ease;
-            background: #fafafa;
+            transition: all 0.15s ease;
+            background: #ffffff;
+            font-family: inherit;
         }
 
         .input-field:focus {
             outline: none;
             border-color: #2383e2;
-            background: white;
+            box-shadow: 0 0 0 2px rgba(35, 131, 226, 0.1);
+        }
+
+        .input-field::placeholder {
+            color: #a8a8a6;
         }
 
         .textarea-field {
-            min-height: 120px;
+            min-height: 100px;
             resize: vertical;
         }
 
         .file-upload {
             border: 2px dashed #e9e9e7;
-            border-radius: 8px;
-            padding: 24px;
+            border-radius: 6px;
+            padding: 20px;
             text-align: center;
-            transition: border-color 0.2s ease;
+            transition: all 0.15s ease;
             cursor: pointer;
+            background: #fafafa;
         }
 
         .file-upload:hover {
             border-color: #2383e2;
+            background: #f8f9fa;
         }
 
         .file-upload.dragover {
             border-color: #2383e2;
-            background-color: #f0f7ff;
+            background: rgba(35, 131, 226, 0.05);
         }
 
         .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #2383e2;
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 10px 20px;
+            border-radius: 6px;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            font-family: inherit;
         }
 
         .btn:hover {
+            background: #1a6bc7;
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
         .btn:disabled {
-            opacity: 0.6;
+            background: #a8a8a6;
             cursor: not-allowed;
             transform: none;
         }
 
         .btn-secondary {
-            background: #f1f1ef;
-            color: #37352f;
+            background: #f1f1f0;
+            color: #2d2d2d;
+            border: 1px solid #e9e9e7;
         }
 
         .btn-secondary:hover {
             background: #e9e9e7;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-color: #d3d3d1;
         }
 
         .results-section {
-            background: white;
-            border-radius: 12px;
-            padding: 32px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 28px;
             border: 1px solid #e9e9e7;
-            margin-top: 24px;
+            margin-top: 20px;
             display: none;
         }
 
         .results-section.active {
             display: block;
+            animation: fadeIn 0.2s ease;
         }
 
-        .result-item {
-            padding: 16px;
-            border: 1px solid #e9e9e7;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            background: #fafafa;
+        .results-section h3 {
+            color: #2d2d2d;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
         }
 
-        .result-item.success {
-            border-color: #4caf50;
-            background: #f1f8e9;
+
+
+        .copy-btn {
+            background: #2383e2;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
         }
 
-        .result-item.error {
-            border-color: #f44336;
-            background: #ffebee;
+        .copy-btn:hover {
+            background: #1a6bc7;
+        }
+
+        .copy-btn.copied {
+            background: #059669;
         }
 
         .loading {
             display: none;
             text-align: center;
             padding: 20px;
+            color: #2d2d2d;
         }
 
         .loading.active {
@@ -244,13 +282,13 @@
         }
 
         .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #2383e2;
+            border: 2px solid #f1f1f0;
+            border-top: 2px solid #2383e2;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
+            margin: 0 auto 12px;
         }
 
         @keyframes spin {
@@ -260,37 +298,45 @@
 
         .progress-bar {
             width: 100%;
-            height: 4px;
-            background: #e9e9e7;
+            height: 3px;
+            background: #f1f1f0;
             border-radius: 2px;
             overflow: hidden;
-            margin: 16px 0;
+            margin: 12px 0;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: #2383e2;
             width: 0%;
             transition: width 0.3s ease;
         }
 
         .alert {
             padding: 12px 16px;
-            border-radius: 8px;
+            border-radius: 6px;
             margin-bottom: 16px;
             display: none;
+            font-size: 14px;
+            font-weight: 500;
         }
 
         .alert.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: #f0f9ff;
+            color: #0f766e;
+            border: 1px solid #a7f3d0;
         }
 
         .alert.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+
+        .alert.info {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #93c5fd;
         }
 
         .alert.active {
@@ -299,20 +345,63 @@
 
         @media (max-width: 768px) {
             .container {
-                padding: 16px;
+                padding: 20px 16px;
+            }
+
+            .header {
+                margin-bottom: 40px;
             }
 
             .header h1 {
                 font-size: 2rem;
             }
 
+            .header p {
+                font-size: 1rem;
+            }
+
             .features-grid {
                 grid-template-columns: 1fr;
+                gap: 16px;
             }
 
             .feature-card {
-                padding: 24px;
+                padding: 20px;
             }
+
+            .input-section {
+                padding: 20px;
+            }
+
+            .results-section {
+                padding: 20px;
+            }
+        }
+
+        /* 增强的视觉效果 */
+        .feature-card:active {
+            transform: translateY(0);
+            border-color: #1a6bc7;
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* 全局过渡效果 */
+        * {
+            transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        /* 链接样式 */
+        a {
+            color: #2383e2;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #1a6bc7;
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -320,7 +409,7 @@
     <div class="container">
         <div class="header">
             <h1>FastMedia</h1>
-            <p>基于Python的媒体处理库，提供视频下载、BGM提取、文案提取、水印添加、封面提取等功能</p>
+            <p>这是一个媒体处理库，提供视频下载、BGM提取、封面提取等功能</p>
         </div>
 
         <div class="features-grid">
@@ -340,21 +429,7 @@
                 <div class="feature-description">从视频中提取背景音乐，支持多种音频格式输出</div>
             </div>
 
-            <div class="feature-card" data-feature="text">
-                <div class="feature-icon">
-                    <i class="fas fa-file-text"></i>
-                </div>
-                <div class="feature-title">文案提取</div>
-                <div class="feature-description">提取视频标题、描述、字幕等文字内容</div>
-            </div>
 
-            <div class="feature-card" data-feature="watermark">
-                <div class="feature-icon">
-                    <i class="fas fa-stamp"></i>
-                </div>
-                <div class="feature-title">添加水印</div>
-                <div class="feature-description">为视频添加文字或图片水印，支持多种位置和样式</div>
-            </div>
 
             <div class="feature-card" data-feature="thumbnail">
                 <div class="feature-icon">
@@ -385,37 +460,7 @@
             <button class="btn" onclick="processVideos('bgm')">提取BGM</button>
         </div>
 
-        <!-- 文案提取 -->
-        <div class="input-section" id="text-section">
-            <h3>文案提取</h3>
-            <div class="input-group">
-                <label class="input-label">视频URL（用逗号分隔）</label>
-                <textarea class="input-field textarea-field" id="text-urls" placeholder="请输入视频URL，多个URL用逗号分隔"></textarea>
-            </div>
-            <button class="btn" onclick="processVideos('text')">提取文案</button>
-        </div>
 
-        <!-- 水印添加 -->
-        <div class="input-section" id="watermark-section">
-            <h3>添加水印</h3>
-            <div class="input-group">
-                <label class="input-label">视频URL（用逗号分隔）</label>
-                <textarea class="input-field textarea-field" id="watermark-urls" placeholder="请输入视频URL，多个URL用逗号分隔"></textarea>
-            </div>
-            <div class="input-group">
-                <label class="input-label">水印文字</label>
-                <input type="text" class="input-field" id="watermark-text" placeholder="输入水印文字（可选）">
-            </div>
-            <div class="input-group">
-                <label class="input-label">水印图片</label>
-                <div class="file-upload" id="watermark-upload">
-                    <i class="fas fa-cloud-upload-alt" style="font-size: 24px; color: #6b6b6b; margin-bottom: 8px;"></i>
-                    <p>点击或拖拽上传水印图片</p>
-                    <input type="file" id="watermark-file" accept="image/*" style="display: none;">
-                </div>
-            </div>
-            <button class="btn" onclick="processVideos('watermark')">添加水印</button>
-        </div>
 
         <!-- 封面提取 -->
         <div class="input-section" id="thumbnail-section">

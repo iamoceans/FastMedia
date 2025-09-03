@@ -7,17 +7,15 @@ class Config:
     # 基础配置
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'your-secret-key-change-this-in-production'
     
-    # 文件上传配置
-    UPLOAD_FOLDER = 'uploads'
-    MAX_CONTENT_LENGTH = 100 * 1024 * 1024  # 100MB
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
+    # 文件上传配置（已移除水印图片上传功能）
+    # UPLOAD_FOLDER = 'uploads'
+    # MAX_CONTENT_LENGTH = 100 * 1024 * 1024  # 100MB
+    # ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
     
     # 下载目录配置
     DOWNLOAD_BASE_DIR = 'downloads'
     VIDEO_DOWNLOAD_DIR = os.path.join(DOWNLOAD_BASE_DIR, 'videos')
     BGM_DOWNLOAD_DIR = os.path.join(DOWNLOAD_BASE_DIR, 'bgm')
-    TEXT_DOWNLOAD_DIR = os.path.join(DOWNLOAD_BASE_DIR, 'texts')
-    WATERMARK_DOWNLOAD_DIR = os.path.join(DOWNLOAD_BASE_DIR, 'watermarked')
     THUMBNAIL_DOWNLOAD_DIR = os.path.join(DOWNLOAD_BASE_DIR, 'thumbnails')
     
     # 视频处理配置
@@ -25,11 +23,7 @@ class Config:
     VIDEO_QUALITY = 'best[height<=720]'
     AUDIO_QUALITY = '192'  # kbps
     
-    # 水印配置
-    DEFAULT_WATERMARK_POSITION = 'bottom-right'
-    DEFAULT_WATERMARK_OPACITY = 0.8
-    DEFAULT_WATERMARK_SCALE = 0.1
-    DEFAULT_FONT_SIZE = 24
+    # 水印配置已移除
     
     # 缩略图配置
     THUMBNAIL_SIZE = (320, 180)  # 16:9 比例
@@ -62,12 +56,9 @@ class Config:
         """初始化应用配置"""
         # 创建必要的目录
         directories = [
-            Config.UPLOAD_FOLDER,
             Config.DOWNLOAD_BASE_DIR,
             Config.VIDEO_DOWNLOAD_DIR,
             Config.BGM_DOWNLOAD_DIR,
-            Config.TEXT_DOWNLOAD_DIR,
-            Config.WATERMARK_DOWNLOAD_DIR,
             Config.THUMBNAIL_DOWNLOAD_DIR,
             'logs'
         ]

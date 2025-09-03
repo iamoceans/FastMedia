@@ -1,6 +1,5 @@
 // 全局变量
 let currentFeature = null;
-let uploadedWatermarkPath = null;
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
@@ -18,16 +17,7 @@ function initializeEventListeners() {
         });
     });
 
-    // 文件上传事件
-    const fileUpload = document.getElementById('watermark-upload');
-    const fileInput = document.getElementById('watermark-file');
-    
-    if (fileUpload && fileInput) {
-        fileUpload.addEventListener('click', () => fileInput.click());
-        fileUpload.addEventListener('dragover', handleDragOver);
-        fileUpload.addEventListener('drop', handleDrop);
-        fileInput.addEventListener('change', handleFileSelect);
-    }
+    // 文件上传相关功能已移除
 }
 
 // 选择功能
@@ -76,24 +66,7 @@ async function processVideos(type) {
             case 'bgm':
                 endpoint = '/api/extract_bgm';
                 break;
-            case 'text':
-                endpoint = '/api/extract_text';
-                break;
-            case 'watermark':
-                endpoint = '/api/add_watermark';
-                const watermarkText = document.getElementById('watermark-text').value.trim();
-                if (watermarkText) {
-                    requestData.watermark_text = watermarkText;
-                }
-                if (uploadedWatermarkPath) {
-                    requestData.watermark_image = uploadedWatermarkPath;
-                }
-                if (!watermarkText && !uploadedWatermarkPath) {
-                    hideLoading();
-                    showAlert('请输入水印文字或上传水印图片', 'error');
-                    return;
-                }
-                break;
+
             case 'thumbnail':
                 endpoint = '/api/extract_thumbnail';
                 const timestamp = document.getElementById('thumbnail-timestamp').value;
@@ -141,138 +114,254 @@ function displayResults(results, type) {
         const resultItem = document.createElement('div');
         resultItem.className = `result-item ${result.status}`;
         
-        let content = `<strong>项目 ${index + 1}:</strong> ${result.url || '本地处理'}<br>`;
+        // 创建结果卡片的HTML结构
+        const resultCard = document.createElement('div');
+        resultCard.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 20px;
+            background: ${result.status === 'success' ? '#f0f9ff' : '#fef2f2'};
+            border: 1px solid ${result.status === 'success' ? '#a7f3d0' : '#fca5a5'};
+            border-radius: 8px;
+            margin-bottom: 16px;
+        `;
+        
+        // 左侧信息区域
+        const infoSection = document.createElement('div');
+        infoSection.style.cssText = 'flex: 1; min-width: 0;';
+        
+        // 状态和序号
+        const header = document.createElement('div');
+        header.style.cssText = 'display: flex; align-items: center; gap: 8px; margin-bottom: 12px;';
+        
+        const statusIcon = document.createElement('span');
+        statusIcon.style.cssText = `
+            font-size: 18px;
+            font-weight: bold;
+            color: ${result.status === 'success' ? '#059669' : '#dc2626'};
+        `;
+        statusIcon.textContent = result.status === 'success' ? '✓' : '✗';
+        
+        const itemNumber = document.createElement('span');
+        itemNumber.style.cssText = 'font-weight: 600; color: #2d2d2d; font-size: 16px;';
+        itemNumber.textContent = `项目 ${index + 1}`;
+        
+        const statusText = document.createElement('span');
+        statusText.style.cssText = `
+            color: ${result.status === 'success' ? '#059669' : '#dc2626'};
+            font-weight: 500;
+            font-size: 14px;
+        `;
+        statusText.textContent = result.status === 'success' ? '处理成功' : '处理失败';
+        
+        header.appendChild(statusIcon);
+        header.appendChild(itemNumber);
+        header.appendChild(statusText);
+        
+        // URL信息
+        const urlInfo = document.createElement('div');
+        urlInfo.style.cssText = 'margin-bottom: 12px;';
+        
+        const urlLabel = document.createElement('div');
+        urlLabel.style.cssText = 'font-size: 12px; color: #6b7280; margin-bottom: 4px;';
+        urlLabel.textContent = '视频链接:';
+        
+        const urlText = document.createElement('div');
+        urlText.style.cssText = `
+            font-size: 14px;
+            color: #2383e2;
+            word-break: break-all;
+            line-height: 1.4;
+        `;
+        urlText.textContent = result.url || '本地处理';
+        
+        urlInfo.appendChild(urlLabel);
+        urlInfo.appendChild(urlText);
+        
+        // 详细信息
+        const detailsSection = document.createElement('div');
+        detailsSection.style.cssText = 'display: grid; gap: 8px;';
         
         if (result.status === 'success') {
-            content += `<span style="color: #4caf50;">✓ 处理成功</span><br>`;
-            
+            // 标题
             if (result.title) {
-                content += `标题: ${result.title}<br>`;
+                const titleRow = createInfoRow('标题', result.title);
+                detailsSection.appendChild(titleRow);
             }
             
-            if (result.filepath) {
-                content += `文件路径: ${result.filepath}<br>`;
-                content += `<a href="/download/${encodeURIComponent(result.filepath)}" class="btn btn-secondary" style="margin-top: 8px; text-decoration: none;"><i class="fas fa-download"></i> 下载文件</a>`;
+            // 平台信息
+            if (result.platform) {
+                const platformRow = createInfoRow('平台', result.platform);
+                detailsSection.appendChild(platformRow);
             }
             
+            // 文件大小
             if (result.filesize) {
-                content += `文件大小: ${formatFileSize(result.filesize)}<br>`;
+                const sizeRow = createInfoRow('文件大小', formatFileSize(result.filesize));
+                detailsSection.appendChild(sizeRow);
+            }
+            
+            // 文件路径
+            if (result.filepath) {
+                const pathRow = createInfoRow('文件路径', getFileName(result.filepath));
+                detailsSection.appendChild(pathRow);
             }
             
             // 根据类型显示特定信息
-            switch (type) {
-                case 'text':
-                    if (result.text_content) {
-                        content += `<details style="margin-top: 8px;"><summary>查看文案内容</summary><pre style="white-space: pre-wrap; margin-top: 8px; padding: 8px; background: #f5f5f5; border-radius: 4px;">${result.text_content}</pre></details>`;
-                    }
-                    break;
-                case 'watermark':
-                    if (result.watermark_type) {
-                        content += `水印类型: ${result.watermark_type === 'text' ? '文字水印' : '图片水印'}<br>`;
-                    }
-                    break;
-                case 'thumbnail':
-                    if (result.timestamp !== undefined) {
-                        content += `提取时间点: ${result.timestamp}秒<br>`;
-                    }
-                    break;
+            if (type === 'thumbnail' && result.timestamp !== undefined) {
+                const timestampRow = createInfoRow('提取时间点', `${result.timestamp}秒`);
+                detailsSection.appendChild(timestampRow);
             }
             
         } else {
-            content += `<span style="color: #f44336;">✗ 处理失败</span><br>`;
-            content += `错误信息: ${result.error}<br>`;
+            // 错误信息
+            const errorRow = document.createElement('div');
+            errorRow.style.cssText = 'margin-top: 8px;';
+            
+            const errorLabel = document.createElement('div');
+            errorLabel.style.cssText = 'font-size: 12px; color: #6b7280; margin-bottom: 4px;';
+            errorLabel.textContent = '错误信息:';
+            
+            const errorText = document.createElement('div');
+            errorText.style.cssText = 'font-size: 14px; color: #dc2626; line-height: 1.4;';
+            errorText.textContent = result.error || '未知错误';
+            
+            errorRow.appendChild(errorLabel);
+            errorRow.appendChild(errorText);
+            detailsSection.appendChild(errorRow);
         }
         
-        resultItem.innerHTML = content;
-        resultsContent.appendChild(resultItem);
+        // 组装左侧信息
+        infoSection.appendChild(header);
+        infoSection.appendChild(urlInfo);
+        infoSection.appendChild(detailsSection);
+        
+        // 右侧操作区域
+        const actionSection = document.createElement('div');
+        actionSection.style.cssText = 'display: flex; flex-direction: column; gap: 8px; align-items: flex-end;';
+        
+        if (result.status === 'success' && result.filepath) {
+            // 下载按钮
+            const downloadBtn = document.createElement('a');
+            downloadBtn.href = `/download/${encodeURIComponent(result.filepath)}`;
+            downloadBtn.className = 'btn';
+            downloadBtn.style.cssText = `
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 8px 16px;
+                background: #2383e2;
+                color: white;
+                text-decoration: none;
+                border-radius: 6px;
+                font-size: 14px;
+                font-weight: 500;
+                transition: all 0.15s ease;
+                white-space: nowrap;
+                margin-bottom: 4px;
+            `;
+            downloadBtn.innerHTML = '<i class="fas fa-download"></i> 下载文件';
+            
+            // 添加悬停效果
+            downloadBtn.addEventListener('mouseenter', function() {
+                this.style.background = '#1a6bc7';
+                this.style.transform = 'translateY(-1px)';
+            });
+            downloadBtn.addEventListener('mouseleave', function() {
+                this.style.background = '#2383e2';
+                this.style.transform = 'translateY(0)';
+            });
+            
+            actionSection.appendChild(downloadBtn);
+        }
+        
+        // 组装完整卡片
+        resultCard.appendChild(infoSection);
+        resultCard.appendChild(actionSection);
+        
+        resultsContent.appendChild(resultCard);
     });
+    
+    // 添加批量下载按钮
+    const successResults = results.filter(result => result.status === 'success' && result.filepath);
+    if (successResults.length > 1) {
+        const batchDownloadContainer = document.createElement('div');
+        batchDownloadContainer.style.cssText = `
+            margin-top: 20px;
+            padding: 16px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            text-align: center;
+        `;
+        
+        const batchDownloadBtn = document.createElement('button');
+        batchDownloadBtn.className = 'btn';
+        batchDownloadBtn.style.cssText = `
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: #059669;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        `;
+        batchDownloadBtn.innerHTML = '<i class="fas fa-download"></i> 批量下载 (' + successResults.length + ' 个文件)';
+        
+        // 添加悬停效果
+        batchDownloadBtn.addEventListener('mouseenter', function() {
+            this.style.background = '#047857';
+            this.style.transform = 'translateY(-1px)';
+        });
+        batchDownloadBtn.addEventListener('mouseleave', function() {
+            this.style.background = '#059669';
+            this.style.transform = 'translateY(0)';
+        });
+        
+        // 添加点击事件
+        batchDownloadBtn.addEventListener('click', function() {
+            showBatchSaveDialog(successResults);
+        });
+        
+        batchDownloadContainer.appendChild(batchDownloadBtn);
+        resultsContent.appendChild(batchDownloadContainer);
+    }
     
     resultsSection.classList.add('active');
 }
 
-// 文件拖拽处理
-function handleDragOver(e) {
-    e.preventDefault();
-    e.currentTarget.classList.add('dragover');
-}
-
-function handleDrop(e) {
-    e.preventDefault();
-    e.currentTarget.classList.remove('dragover');
+// 创建信息行的辅助函数
+function createInfoRow(label, value) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display: flex; gap: 8px;';
     
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-        handleFileUpload(files[0]);
-    }
-}
-
-function handleFileSelect(e) {
-    const file = e.target.files[0];
-    if (file) {
-        handleFileUpload(file);
-    }
-}
-
-// 处理文件上传
-async function handleFileUpload(file) {
-    if (!file.type.startsWith('image/')) {
-        showAlert('请选择图片文件', 'error');
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-        showLoading();
-        
-        const response = await fetch('/api/upload_watermark', {
-            method: 'POST',
-            body: formData
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || '上传失败');
-        }
-
-        uploadedWatermarkPath = data.filepath;
-        
-        // 更新UI显示
-        const uploadDiv = document.getElementById('watermark-upload');
-        uploadDiv.innerHTML = `
-            <i class="fas fa-check-circle" style="font-size: 24px; color: #4caf50; margin-bottom: 8px;"></i>
-            <p style="color: #4caf50;">图片上传成功: ${file.name}</p>
-            <button type="button" class="btn btn-secondary" onclick="resetFileUpload()" style="margin-top: 8px;">重新选择</button>
-        `;
-        
-        showAlert('图片上传成功！', 'success');
-        
-    } catch (error) {
-        console.error('上传错误:', error);
-        showAlert(`上传失败: ${error.message}`, 'error');
-    } finally {
-        hideLoading();
-    }
-}
-
-// 重置文件上传
-function resetFileUpload() {
-    uploadedWatermarkPath = null;
-    const uploadDiv = document.getElementById('watermark-upload');
-    uploadDiv.innerHTML = `
-        <i class="fas fa-cloud-upload-alt" style="font-size: 24px; color: #6b6b6b; margin-bottom: 8px;"></i>
-        <p>点击或拖拽上传水印图片</p>
-        <input type="file" id="watermark-file" accept="image/*" style="display: none;">
-    `;
+    const labelEl = document.createElement('span');
+    labelEl.style.cssText = 'font-size: 12px; color: #6b7280; min-width: 60px; flex-shrink: 0;';
+    labelEl.textContent = label + ':';
     
-    // 重新绑定事件
-    const fileInput = document.getElementById('watermark-file');
-    const fileUpload = document.getElementById('watermark-upload');
-    fileUpload.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', handleFileSelect);
+    const valueEl = document.createElement('span');
+    valueEl.style.cssText = 'font-size: 14px; color: #2d2d2d; word-break: break-all; line-height: 1.4;';
+    valueEl.textContent = value;
+    
+    row.appendChild(labelEl);
+    row.appendChild(valueEl);
+    
+    return row;
 }
+
+// 从文件路径中提取文件名
+function getFileName(filepath) {
+    return filepath.split(/[\\/]/).pop() || filepath;
+}
+
+// 文件上传相关功能已移除
 
 // 显示加载状态
 function showLoading() {
@@ -361,4 +450,176 @@ function copyToClipboard(text) {
 // 下载文件
 function downloadFile(filepath) {
     window.open(`/download/${encodeURIComponent(filepath)}`, '_blank');
+}
+
+// 显示批量另存为对话框
+function showBatchSaveDialog(successResults) {
+    // 创建模态对话框
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    `;
+    
+    const dialog = document.createElement('div');
+    dialog.style.cssText = `
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    `;
+    
+    // 标题
+    const title = document.createElement('h3');
+    title.style.cssText = `
+        margin: 0 0 16px 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+    `;
+    title.textContent = '批量另存为文件';
+    
+    // 说明文字
+    const description = document.createElement('p');
+    description.style.cssText = `
+        margin: 0 0 20px 0;
+        font-size: 14px;
+        color: #6b7280;
+        line-height: 1.5;
+    `;
+    description.textContent = `即将下载 ${successResults.length} 个文件。由于浏览器安全限制，系统将逐个打开下载链接，请在浏览器中选择保存位置。`;
+    
+    // 文件列表
+    const fileList = document.createElement('div');
+    fileList.style.cssText = `
+        margin: 0 0 20px 0;
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 12px;
+        background: #f9fafb;
+    `;
+    
+    const listTitle = document.createElement('div');
+    listTitle.style.cssText = `
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+    `;
+    listTitle.textContent = '文件列表:';
+    fileList.appendChild(listTitle);
+    
+    successResults.forEach((result, index) => {
+        const fileItem = document.createElement('div');
+        fileItem.style.cssText = `
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+            padding: 4px 0;
+            border-bottom: 1px solid #e5e7eb;
+        `;
+        fileItem.textContent = `${index + 1}. ${getFileName(result.filepath)}`;
+        fileList.appendChild(fileItem);
+    });
+    
+    // 按钮区域
+    const buttonArea = document.createElement('div');
+    buttonArea.style.cssText = `
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+    `;
+    
+    // 取消按钮
+    const cancelBtn = document.createElement('button');
+    cancelBtn.style.cssText = `
+        padding: 8px 16px;
+        border: 1px solid #d1d5db;
+        background: white;
+        color: #374151;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    `;
+    cancelBtn.textContent = '取消';
+    cancelBtn.addEventListener('click', () => {
+        document.body.removeChild(modal);
+    });
+    
+    // 确认按钮
+    const confirmBtn = document.createElement('button');
+    confirmBtn.style.cssText = `
+        padding: 8px 16px;
+        border: none;
+        background: #059669;
+        color: white;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    `;
+    confirmBtn.textContent = '开始下载';
+    confirmBtn.addEventListener('click', () => {
+        document.body.removeChild(modal);
+        startBatchDownload(successResults);
+    });
+    
+    buttonArea.appendChild(cancelBtn);
+    buttonArea.appendChild(confirmBtn);
+    
+    // 组装对话框
+    dialog.appendChild(title);
+    dialog.appendChild(description);
+    dialog.appendChild(fileList);
+    dialog.appendChild(buttonArea);
+    modal.appendChild(dialog);
+    
+    // 点击背景关闭
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
+        }
+    });
+    
+    document.body.appendChild(modal);
+}
+
+// 开始批量下载
+function startBatchDownload(successResults) {
+    showAlert('开始批量下载，请在浏览器中选择保存位置', 'success');
+    
+    // 逐个打开下载链接，间隔500ms避免浏览器阻止
+    successResults.forEach((result, index) => {
+        setTimeout(() => {
+            const link = document.createElement('a');
+            link.href = `/download/${encodeURIComponent(result.filepath)}`;
+            link.download = getFileName(result.filepath);
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // 显示进度
+            if (index === successResults.length - 1) {
+                setTimeout(() => {
+                    showAlert('所有文件下载链接已打开，请检查浏览器下载', 'success');
+                }, 500);
+            }
+        }, index * 500);
+    });
 }

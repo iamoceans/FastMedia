@@ -1,7 +1,8 @@
 Flask==2.3.3
-yt-dlp
-Pillow
-requests
-loguru
-python-dotenv
-Flask-CORS
+yt-dlp>=2024.07.01
+Pillow==11.3.0
+requests==2.32.4
+loguru==0.7.3
+python-dotenv==1.1.1
+Flask-CORS>=4.0.2
+moviepy==1.0.3

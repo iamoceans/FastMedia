@@ -21,6 +21,11 @@ class BGMExtractor:
             'extractaudio': True,
             'audioformat': 'mp3',
             'audioquality': '192',
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            }],
         }
     
     def extract_batch(self, urls: List[str]) -> List[Dict]:
@@ -63,8 +68,13 @@ class BGMExtractor:
                 output_filename = f"{extractor}-{safe_title}_bgm.mp3"
                 output_path = os.path.join(self.output_dir, output_filename)
                 
+                # 临时修改yt-dlp配置以确保输出mp3格式
+                temp_opts = self.ydl_opts.copy()
+                temp_opts['outtmpl'] = os.path.join(self.output_dir, f"{extractor}-{safe_title}_bgm.%(ext)s")
+                
                 # 下载并提取音频
-                ydl.download([url])
+                with yt_dlp.YoutubeDL(temp_opts) as temp_ydl:
+                    temp_ydl.download([url])
                 
                 # 检查文件是否存在（可能有不同的扩展名）
                 base_name = f"{extractor}-{safe_title}_bgm"
@@ -79,6 +89,21 @@ class BGMExtractor:
                         else:
                             output_path = potential_path
                         break
+                
+                # 如果没有找到文件，检查是否有其他格式的文件
+                if not os.path.exists(output_path):
+                    # 查找所有可能的文件
+                    import glob
+                    pattern = os.path.join(self.output_dir, f"{extractor}-{safe_title}_bgm.*")
+                    files = glob.glob(pattern)
+                    if files:
+                        # 使用第一个找到的文件
+                        found_file = files[0]
+                        if not found_file.endswith('.mp3'):
+                            # 重命名为mp3
+                            shutil.move(found_file, output_path)
+                        else:
+                            output_path = found_file
                 
                 return {
                     'url': url,

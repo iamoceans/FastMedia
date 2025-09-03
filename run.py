@@ -120,8 +120,6 @@ def print_startup_info(host: str, port: int, env: str, debug: bool):
     print("\n功能列表:")
     print("  📥 批量视频下载 (支持抖音、TikTok、B站、YouTube等)")
     print("  🎵 BGM提取")
-    print("  📝 文案提取")
-    print("  🏷️  水印添加")
     print("  🖼️  封面提取")
     print("\n按 Ctrl+C 停止服务")
     print("="*50 + "\n")
@@ -151,7 +149,6 @@ def main():
     if args.clean:
         print("🧹 清理旧文件...")
         clean_old_files('downloads', max_age_days=7)
-        clean_old_files('uploads', max_age_days=1)
     
     # 打印启动信息
     print_startup_info(args.host, args.port, env, debug)

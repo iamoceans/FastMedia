@@ -1,6 +1,6 @@
 # FastMedia
 
-🎬 **FastMedia** 是一个功能强大的媒体处理平台，基于 Flask 框架构建，提供全方位的视频处理服务。支持多平台视频下载、BGM提取、文案提取、水印添加和封面生成等功能。
+🎬 **FastMedia** 是一个功能强大的媒体处理平台，基于 Flask 框架构建，提供全方位的视频处理服务。支持多平台视频下载、BGM提取和封面生成等功能。
 
 ## ✨ 核心功能
 
@@ -16,17 +16,7 @@
 - 批量处理：同时处理多个视频的BGM提取
 - 平台兼容：支持所有主流视频平台
 
-### 📝 批量视频文案提取
-- 智能识别：自动提取视频标题和描述信息
-- 多语言支持：支持中英文等多种语言文案
-- 结构化输出：提供JSON格式的结构化文案数据
-- 批量导出：支持批量文案提取和导出
 
-### 🖼️ 批量视频水印添加
-- 水印类型：支持文字水印和图片水印
-- 位置控制：可自定义水印位置（右下角为默认）
-- 透明度调节：支持0.8默认透明度，可自定义
-- 尺寸控制：智能缩放，默认0.1比例
 
 ### 🖼️ 批量视频封面提取
 - 多种模式：支持提取视频第一帧或指定时间点帧
@@ -39,16 +29,16 @@
 ### 后端技术栈
 - **框架**: Flask 2.3.3 - 轻量级Web框架
 - **视频处理**: yt-dlp - 强大的视频下载工具
+- **视频编辑**: MoviePy - 视频处理和编辑
 - **图像处理**: Pillow - Python图像处理库
 - **日志系统**: loguru - 现代化日志记录
 - **HTTP请求**: requests - 简洁的HTTP库
 - **跨域支持**: Flask-CORS - 跨域资源共享
+- **环境管理**: python-dotenv - 环境变量管理
 
 ### 核心服务模块
 - `VideoDownloader` - 视频下载服务
 - `BGMExtractor` - BGM提取服务
-- `TextExtractor` - 文案提取服务
-- `WatermarkAdder` - 水印添加服务
 - `ThumbnailExtractor` - 封面提取服务
 - `KuaishouDownloader` - 快手专用下载器
 
@@ -73,7 +63,7 @@ pip install -r requirements.txt
 
 3. **启动服务**
 ```bash
-python app.py
+python run.py
 ```
 
 4. **访问应用**
@@ -96,7 +86,7 @@ FastMedia 提供简洁现代的Web界面，参考Notion设计风格：
 ### 界面功能模块
 
 #### 📥 任务输入区
-- **功能选择**: 下拉菜单选择处理类型（下载/BGM/文案/水印/封面）
+- **功能选择**: 下拉菜单选择处理类型（下载/BGM/封面）
 - **URL输入**: 多行文本框，支持批量粘贴URL列表
 - **参数配置**: 根据选择功能动态显示相关配置选项
 
@@ -140,28 +130,7 @@ Content-Type: application/json
 }
 ```
 
-### 文案提取
-```http
-POST /api/extract_text
-Content-Type: application/json
 
-{
-  "urls": "https://example.com/video1,https://example.com/video2"
-}
-```
-
-### 水印添加
-```http
-POST /api/add_watermark
-Content-Type: application/json
-
-{
-  "urls": "https://example.com/video1",
-  "watermark_type": "text",
-  "watermark_text": "@YourBrand",
-  "position": "bottom-right"
-}
-```
 
 ### 封面提取
 ```http
@@ -193,25 +162,26 @@ FastMedia/
 ├── config.py             # 配置文件
 ├── requirements.txt      # 依赖包列表
 ├── run.py               # 启动脚本
+├── utils.py             # 工具函数
 ├── services/            # 核心服务模块
+│   ├── __init__.py
 │   ├── video_downloader.py
 │   ├── bgm_extractor.py
-│   ├── text_extractor.py
-│   ├── watermark_adder.py
 │   ├── thumbnail_extractor.py
 │   └── kuaishou_downloader.py
 ├── static/              # 静态资源
 │   ├── css/
+│   │   └── style.css
 │   └── js/
+│       └── main.js
 ├── templates/           # HTML模板
+│   └── index.html
 ├── downloads/           # 下载文件存储
 │   ├── videos/
 │   ├── bgm/
-│   ├── texts/
-│   ├── watermarked/
 │   └── thumbnails/
-├── uploads/             # 上传文件临时存储
 └── logs/               # 日志文件
+    └── fastmedia.log
 ```
 
 ## ⚠️ 注意事项

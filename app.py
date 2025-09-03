@@ -4,8 +4,6 @@ import tempfile
 from werkzeug.utils import secure_filename
 from services.video_downloader import VideoDownloader
 from services.bgm_extractor import BGMExtractor
-from services.text_extractor import TextExtractor
-from services.watermark_adder import WatermarkAdder
 from services.thumbnail_extractor import ThumbnailExtractor
 
 app = Flask(__name__)
@@ -20,8 +18,7 @@ os.makedirs('downloads', exist_ok=True)
 # 初始化服务
 video_downloader = VideoDownloader()
 bgm_extractor = BGMExtractor()
-text_extractor = TextExtractor()
-watermark_adder = WatermarkAdder()
+
 thumbnail_extractor = ThumbnailExtractor()
 
 @app.route('/')
@@ -62,45 +59,6 @@ def extract_bgm():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/extract_text', methods=['POST'])
-def extract_text():
-    """批量视频提取文案"""
-    try:
-        data = request.get_json()
-        urls = data.get('urls', '').split(',')
-        urls = [url.strip() for url in urls if url.strip()]
-        
-        if not urls:
-            return jsonify({'error': '请提供有效的视频URL'}), 400
-        
-        results = text_extractor.extract_batch(urls)
-        return jsonify({'results': results})
-    
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/add_watermark', methods=['POST'])
-def add_watermark():
-    """批量视频添加水印"""
-    try:
-        data = request.get_json()
-        urls = data.get('urls', '').split(',')
-        urls = [url.strip() for url in urls if url.strip()]
-        watermark_text = data.get('watermark_text', '')
-        watermark_image = data.get('watermark_image', '')
-        
-        if not urls:
-            return jsonify({'error': '请提供有效的视频URL'}), 400
-        
-        if not watermark_text and not watermark_image:
-            return jsonify({'error': '请提供水印文字或水印图片'}), 400
-        
-        results = watermark_adder.add_watermark_batch(urls, watermark_text, watermark_image)
-        return jsonify({'results': results})
-    
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
 @app.route('/api/extract_thumbnail', methods=['POST'])
 def extract_thumbnail():
     """批量视频提取封面"""
@@ -119,27 +77,6 @@ def extract_thumbnail():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/upload_watermark', methods=['POST'])
-def upload_watermark():
-    """上传水印图片"""
-    try:
-        if 'file' not in request.files:
-            return jsonify({'error': '没有选择文件'}), 400
-        
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({'error': '没有选择文件'}), 400
-        
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            return jsonify({'filepath': filepath})
-        
-        return jsonify({'error': '不支持的文件格式'}), 400
-    
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
 @app.route('/download/<path:filename>')
 def download_file(filename):

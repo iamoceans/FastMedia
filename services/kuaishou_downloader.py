@@ -969,32 +969,15 @@ query visionShortVideoReco($semKeyword: String, $semCrowd: String, $utmSource: S
     def extract_bgm(self, url: str, custom_filename: str = None) -> Dict:
         """提取视频BGM"""
         try:
-            # 临时返回模拟结果，用于测试
-            logger.warning("快手BGM提取器当前处于测试模式")
-            
-            # 创建一个测试BGM文件
-            safe_title = self._sanitize_filename("测试快手视频")
-            bgm_filename = custom_filename or f"kuaishou-{safe_title}_bgm.mp3"
-            bgm_dir = os.path.join(os.path.dirname(self.download_dir), 'bgm')
-            os.makedirs(bgm_dir, exist_ok=True)
-            bgm_filepath = os.path.join(bgm_dir, bgm_filename)
-            
-            # 创建一个小的测试音频文件
-            test_content = b"This is a test BGM file for Kuaishou downloader"
-            with open(bgm_filepath, 'wb') as f:
-                f.write(test_content)
-            
-            file_size = os.path.getsize(bgm_filepath)
-            logger.info(f"测试BGM文件创建完成: {bgm_filepath} ({file_size} bytes)")
+            # 快手BGM提取功能暂不支持，返回错误信息
+            logger.warning("快手BGM提取功能暂不支持")
             
             return {
                 'url': url,
-                'status': 'success',
-                'title': '测试快手视频',
+                'status': 'error',
+                'error': '快手平台BGM提取功能暂不支持，请使用其他平台的视频链接',
                 'platform': 'kuaishou',
-                'filepath': bgm_filepath,
-                'filesize': file_size,
-                'note': '这是一个测试BGM文件，快手BGM提取功能正在开发中'
+                'filepath': None
             }
             
         except Exception as e:
