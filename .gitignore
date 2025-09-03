@@ -2,6 +2,9 @@
 downloads/*
 logs/*
 
+# Python临时文件
+__pycache__
+
 # 环境变量文件
 .env
 .env.local
@@ -53,6 +56,3 @@ test/
 # 临时文件
 *.tmp
 *.temp
-
-# DrawIO 临时文件
-.$*
