@@ -7,16 +7,18 @@ from .kuaishou_downloader import KuaishouDownloader
 
 class BGMExtractor:
     def __init__(self):
-        self.output_dir = 'downloads/bgm'
+        # 使用临时目录存储BGM文件
+        self.temp_dir = tempfile.mkdtemp(prefix='fastmedia_bgm_')
+        self.output_dir = 'downloads/bgm'  # 保留作为默认目录
         os.makedirs(self.output_dir, exist_ok=True)
-        
+
         # 初始化快手下载器
         self.kuaishou_downloader = KuaishouDownloader('downloads/videos')
-        
+
         # yt-dlp配置，直接提取音频
         self.ydl_opts = {
             'format': 'bestaudio/best',
-            'outtmpl': os.path.join(self.output_dir, '%(extractor)s-%(title)s_bgm.%(ext)s'),
+            'outtmpl': os.path.join(self.temp_dir, '%(extractor)s-%(title)s_bgm.%(ext)s'),
             'writeinfojson': False,
             'extractaudio': True,
             'audioformat': 'mp3',
@@ -70,47 +72,55 @@ class BGMExtractor:
                 
                 # 临时修改yt-dlp配置以确保输出mp3格式
                 temp_opts = self.ydl_opts.copy()
-                temp_opts['outtmpl'] = os.path.join(self.output_dir, f"{extractor}-{safe_title}_bgm.%(ext)s")
-                
+                temp_opts['outtmpl'] = os.path.join(self.temp_dir, f"{extractor}-{safe_title}_bgm.%(ext)s")
+
                 # 下载并提取音频
                 with yt_dlp.YoutubeDL(temp_opts) as temp_ydl:
                     temp_ydl.download([url])
-                
+
                 # 检查文件是否存在（可能有不同的扩展名）
                 base_name = f"{extractor}-{safe_title}_bgm"
+                temp_output_path = None
+
                 for ext in ['.mp3', '.m4a', '.webm', '.ogg']:
-                    potential_path = os.path.join(self.output_dir, base_name + ext)
+                    potential_path = os.path.join(self.temp_dir, base_name + ext)
                     if os.path.exists(potential_path):
                         if ext != '.mp3':
                             # 重命名为mp3
-                            final_path = os.path.join(self.output_dir, base_name + '.mp3')
+                            final_path = os.path.join(self.temp_dir, base_name + '.mp3')
                             shutil.move(potential_path, final_path)
-                            output_path = final_path
+                            temp_output_path = final_path
                         else:
-                            output_path = potential_path
+                            temp_output_path = potential_path
                         break
-                
+
                 # 如果没有找到文件，检查是否有其他格式的文件
-                if not os.path.exists(output_path):
+                if temp_output_path is None or not os.path.exists(temp_output_path):
                     # 查找所有可能的文件
                     import glob
-                    pattern = os.path.join(self.output_dir, f"{extractor}-{safe_title}_bgm.*")
+                    pattern = os.path.join(self.temp_dir, f"{extractor}-{safe_title}_bgm.*")
                     files = glob.glob(pattern)
                     if files:
                         # 使用第一个找到的文件
                         found_file = files[0]
                         if not found_file.endswith('.mp3'):
                             # 重命名为mp3
-                            shutil.move(found_file, output_path)
+                            final_path = os.path.join(self.temp_dir, base_name + '.mp3')
+                            shutil.move(found_file, final_path)
+                            temp_output_path = final_path
                         else:
-                            output_path = found_file
-                
+                            temp_output_path = found_file
+
+                # 构建建议的文件名
+                download_filename = f"{extractor}-{safe_title}_bgm.mp3"
+
                 return {
                     'url': url,
                     'status': 'success',
                     'title': title,
-                    'filepath': output_path,
-                    'filesize': os.path.getsize(output_path) if os.path.exists(output_path) else 0,
+                    'temp_filepath': temp_output_path if temp_output_path and os.path.exists(temp_output_path) else None,
+                    'download_filename': download_filename,
+                    'filesize': os.path.getsize(temp_output_path) if temp_output_path and os.path.exists(temp_output_path) else 0,
                     'duration': info.get('duration', 0)
                 }
                 
@@ -131,3 +141,27 @@ class BGMExtractor:
             
         except Exception as e:
             raise Exception(f'本地视频BGM提取失败: {str(e)}')
+
+    def cleanup_temp_file(self, filepath: str):
+        """清理临时文件"""
+        try:
+            if os.path.exists(filepath):
+                os.remove(filepath)
+                print(f"已清理BGM临时文件: {filepath}")
+        except Exception as e:
+            print(f"清理BGM临时文件失败: {str(e)}")
+
+    def get_temp_file_info(self, filepath: str) -> dict:
+        """获取临时文件信息"""
+        try:
+            if os.path.exists(filepath):
+                stat = os.stat(filepath)
+                return {
+                    'exists': True,
+                    'size': stat.st_size,
+                    'modified_time': stat.st_mtime
+                }
+            else:
+                return {'exists': False}
+        except Exception as e:
+            return {'exists': False, 'error': str(e)}

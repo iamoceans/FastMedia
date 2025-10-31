@@ -343,6 +343,85 @@
             display: block;
         }
 
+        /* 常驻URL输入区域样式 */
+        .url-input-section {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 28px;
+            border: 2px solid #e9e9e7;
+            margin-bottom: 40px;
+        }
+
+        .url-input-header h3 {
+            color: #2d2d2d;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .url-input-header p {
+            color: #787774;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .url-input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        #global-urls {
+            min-height: 80px;
+        }
+
+        .url-input-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        #process-btn {
+            background: #a8a8a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #process-btn:enabled {
+            background: #2383e2;
+            cursor: pointer;
+        }
+
+        #process-btn:enabled:hover {
+            background: #1a6bc7;
+            transform: translateY(-1px);
+        }
+
+        #process-btn:disabled {
+            background: #a8a8a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 移除原有的input-section，但保留thumbnail-section */
+        .input-section:not(#thumbnail-section) {
+            display: none !important;
+        }
+
+        .input-section#thumbnail-section {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e9e9e7;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .input-section#thumbnail-section.active {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px 16px;
@@ -412,6 +491,23 @@
             <p>这是一个媒体处理库，提供视频下载、BGM提取、封面提取等功能</p>
         </div>
 
+        <!-- 常驻URL输入区域 -->
+        <div class="url-input-section">
+            <div class="url-input-header">
+                <h3>视频URL输入</h3>
+                <p>输入一个或多个视频URL，用逗号分隔</p>
+            </div>
+            <div class="url-input-container">
+                <textarea class="input-field textarea-field" id="global-urls" placeholder="请输入视频URL，多个URL用逗号分隔&#10;例如：https://www.douyin.com/video/xxx, https://www.youtube.com/watch?v=xxx"></textarea>
+                <div class="url-input-actions">
+                    <button class="btn" id="process-btn" onclick="processSelectedFeature()" disabled>
+                        <i class="fas fa-play"></i>
+                        <span id="process-btn-text">请选择功能</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="features-grid">
             <div class="feature-card" data-feature="download">
                 <div class="feature-icon">
@@ -462,18 +558,13 @@
 
 
 
-        <!-- 封面提取 -->
+        <!-- 封面提取选项 -->
         <div class="input-section" id="thumbnail-section">
-            <h3>封面提取</h3>
-            <div class="input-group">
-                <label class="input-label">视频URL（用逗号分隔）</label>
-                <textarea class="input-field textarea-field" id="thumbnail-urls" placeholder="请输入视频URL，多个URL用逗号分隔"></textarea>
-            </div>
+            <h3>封面提取选项</h3>
             <div class="input-group">
                 <label class="input-label">时间点（秒）</label>
                 <input type="number" class="input-field" id="thumbnail-timestamp" value="0" min="0" placeholder="提取指定时间点的帧，0表示第一帧">
             </div>
-            <button class="btn" onclick="processVideos('thumbnail')">提取封面</button>
         </div>
 
         <!-- 加载状态 -->

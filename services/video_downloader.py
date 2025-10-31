@@ -8,15 +8,18 @@ from .kuaishou_downloader import KuaishouDownloader
 
 class VideoDownloader:
     def __init__(self):
-        self.download_dir = 'downloads/videos'
+        # 使用临时目录存储下载的文件
+        import tempfile
+        self.temp_dir = tempfile.mkdtemp(prefix='fastmedia_')
+        self.download_dir = 'downloads/videos'  # 保留作为默认下载目录
         os.makedirs(self.download_dir, exist_ok=True)
 
         # 初始化快手下载器
-        self.kuaishou_downloader = KuaishouDownloader(self.download_dir)
+        self.kuaishou_downloader = KuaishouDownloader(self.temp_dir)
 
         # yt-dlp基础配置
         self.ydl_opts = {
-            'outtmpl': os.path.join(self.download_dir, '%(extractor)s-%(title)s.%(ext)s'),
+            'outtmpl': os.path.join(self.temp_dir, '%(extractor)s-%(title)s.%(ext)s'),
             'format': 'best[height<=720]/best[height<=480]/best/worst',  # 更灵活的格式选择
             'writeinfojson': False,
             'writesubtitles': False,
@@ -106,6 +109,7 @@ class VideoDownloader:
                 }
             elif platform == 'kuaishou':
                 # 快手特殊配置
+                opts = self.ydl_opts.copy()
                 opts['format'] = 'best/worst'
                 opts['http_headers'] = {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -121,6 +125,9 @@ class VideoDownloader:
                 }
                 opts['cookiefile'] = None
                 opts['ignoreerrors'] = True
+            else:
+                # 其他平台（YouTube等）使用默认配置
+                opts = self.ydl_opts.copy()
             
             # 使用yt-dlp下载
             try:
@@ -164,7 +171,8 @@ class VideoDownloader:
                     # 构建文件路径（包含平台信息）
                     extractor = info.get('extractor', platform.replace('/', '_'))
                     filename = f"{extractor}-{title}.{info.get('ext', 'mp4')}"
-                    filepath = os.path.join(self.download_dir, filename)
+                    # 实际下载的文件路径在临时目录中
+                    actual_filepath = os.path.join(self.temp_dir, filename)
 
                     return {
                         'url': url,  # 返回原始URL
@@ -172,8 +180,9 @@ class VideoDownloader:
                         'status': 'success',
                         'title': title,
                         'platform': platform,
-                        'filepath': filepath,
-                        'filesize': os.path.getsize(filepath) if os.path.exists(filepath) else 0,
+                        'temp_filepath': actual_filepath,  # 临时文件路径
+                        'download_filename': filename,  # 建议的文件名
+                        'filesize': os.path.getsize(actual_filepath) if os.path.exists(actual_filepath) else 0,
                         'duration': info.get('duration', 0),
                         'uploader': info.get('uploader', '')
                     }
@@ -190,6 +199,30 @@ class VideoDownloader:
         except Exception as e:
             # 捕获 download_single 方法的其他错误
             raise Exception(f'视频下载失败: {str(e)}')
+
+    def cleanup_temp_file(self, filepath: str):
+        """清理临时文件"""
+        try:
+            if os.path.exists(filepath):
+                os.remove(filepath)
+                print(f"已清理临时文件: {filepath}")
+        except Exception as e:
+            print(f"清理临时文件失败: {str(e)}")
+
+    def get_temp_file_info(self, filepath: str) -> dict:
+        """获取临时文件信息"""
+        try:
+            if os.path.exists(filepath):
+                stat = os.stat(filepath)
+                return {
+                    'exists': True,
+                    'size': stat.st_size,
+                    'modified_time': stat.st_mtime
+                }
+            else:
+                return {'exists': False}
+        except Exception as e:
+            return {'exists': False, 'error': str(e)}
 
     def detect_platform(self, url: str) -> str:
         """检测视频平台"""

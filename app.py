@@ -203,9 +203,83 @@ def check_bilibili_video():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/download_temp_file', methods=['POST'])
+def download_temp_file():
+    """下载临时文件"""
+    try:
+        data = request.get_json()
+        temp_filepath = data.get('temp_filepath')
+        download_filename = data.get('download_filename', 'video.mp4')
+        file_type = data.get('file_type', 'video')  # 根据文件类型设置mimetype
+
+        if not temp_filepath or not os.path.exists(temp_filepath):
+            return jsonify({'error': '文件不存在或已被清理'}), 404
+
+        # 根据文件类型设置mimetype
+        if file_type == 'bgm':
+            mimetype = 'audio/mpeg'
+        elif file_type == 'thumbnail':
+            mimetype = 'image/jpeg'
+        else:
+            mimetype = 'video/mp4'
+
+        return send_file(
+            temp_filepath,
+            as_attachment=True,
+            download_name=download_filename,
+            mimetype=mimetype
+        )
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/cleanup_temp_file', methods=['POST'])
+def cleanup_temp_file():
+    """清理临时文件"""
+    try:
+        data = request.get_json()
+        temp_filepath = data.get('temp_filepath')
+        file_type = data.get('file_type', 'video')  # 'video', 'bgm' 或 'thumbnail'
+
+        if temp_filepath:
+            if file_type == 'bgm':
+                bgm_extractor.cleanup_temp_file(temp_filepath)
+            elif file_type == 'thumbnail':
+                thumbnail_extractor.cleanup_temp_file(temp_filepath)
+            else:
+                video_downloader.cleanup_temp_file(temp_filepath)
+            return jsonify({'status': 'success', 'message': '文件已清理'})
+        else:
+            return jsonify({'error': '未提供文件路径'}), 400
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/check_temp_file', methods=['POST'])
+def check_temp_file():
+    """检查临时文件状态"""
+    try:
+        data = request.get_json()
+        temp_filepath = data.get('temp_filepath')
+        file_type = data.get('file_type', 'video')  # 'video', 'bgm' 或 'thumbnail'
+
+        if not temp_filepath:
+            return jsonify({'error': '未提供文件路径'}), 400
+
+        if file_type == 'bgm':
+            file_info = bgm_extractor.get_temp_file_info(temp_filepath)
+        elif file_type == 'thumbnail':
+            file_info = thumbnail_extractor.get_temp_file_info(temp_filepath)
+        else:
+            file_info = video_downloader.get_temp_file_info(temp_filepath)
+        return jsonify(file_info)
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/download/<path:filename>')
 def download_file(filename):
-    """下载文件"""
+    """下载文件（保留原有功能）"""
     try:
         return send_file(filename, as_attachment=True)
     except Exception as e:

@@ -17,6 +17,10 @@ function initializeEventListeners() {
         });
     });
 
+    // 全局URL输入框事件
+    const globalUrlsInput = document.getElementById('global-urls');
+    globalUrlsInput.addEventListener('input', updateProcessButton);
+
     // 文件上传相关功能已移除
 }
 
@@ -26,17 +30,128 @@ function selectFeature(feature) {
     document.querySelectorAll('.feature-card').forEach(card => {
         card.classList.remove('active');
     });
-    document.querySelectorAll('.input-section').forEach(section => {
-        section.classList.remove('active');
-    });
 
     // 添加活动状态
     document.querySelector(`[data-feature="${feature}"]`).classList.add('active');
-    document.getElementById(`${feature}-section`).classList.add('active');
-    
+
+    // 封面提取特殊处理：显示时间输入
+    if (feature === 'thumbnail') {
+        document.getElementById('thumbnail-section').classList.add('active');
+    } else {
+        document.querySelectorAll('.input-section').forEach(section => {
+            section.classList.remove('active');
+        });
+    }
+
     currentFeature = feature;
+    updateProcessButton();
     hideResults();
     hideAlert();
+}
+
+// 更新处理按钮状态
+function updateProcessButton() {
+    const urlsInput = document.getElementById('global-urls');
+    const processBtn = document.getElementById('process-btn');
+    const processBtnText = document.getElementById('process-btn-text');
+
+    const hasUrls = urlsInput.value.trim() !== '';
+    const hasFeature = currentFeature !== null;
+
+    if (hasUrls && hasFeature) {
+        processBtn.disabled = false;
+        // 根据功能设置不同的按钮文本
+        switch (currentFeature) {
+            case 'download':
+                processBtnText.textContent = '开始下载';
+                break;
+            case 'bgm':
+                processBtnText.textContent = '提取BGM';
+                break;
+            case 'thumbnail':
+                processBtnText.textContent = '提取封面';
+                break;
+            default:
+                processBtnText.textContent = '开始处理';
+        }
+    } else {
+        processBtn.disabled = true;
+        if (!hasFeature && !hasUrls) {
+            processBtnText.textContent = '请选择功能并输入URL';
+        } else if (!hasFeature) {
+            processBtnText.textContent = '请选择功能';
+        } else {
+            processBtnText.textContent = '请输入URL';
+        }
+    }
+}
+
+// 处理选中的功能
+async function processSelectedFeature() {
+    if (!currentFeature) {
+        showAlert('请先选择一个功能', 'error');
+        return;
+    }
+
+    const urlsInput = document.getElementById('global-urls');
+    const urls = urlsInput.value.trim();
+
+    if (!urls) {
+        showAlert('请输入视频URL', 'error');
+        return;
+    }
+
+    // 显示加载状态
+    showLoading();
+    hideAlert();
+    hideResults();
+
+    try {
+        let requestData = { urls: urls };
+        let endpoint = '';
+
+        // 根据类型设置不同的请求数据和端点
+        switch (currentFeature) {
+            case 'download':
+                endpoint = '/api/download_videos';
+                break;
+            case 'bgm':
+                endpoint = '/api/extract_bgm';
+                break;
+            case 'thumbnail':
+                endpoint = '/api/extract_thumbnail';
+                const timestamp = document.getElementById('thumbnail-timestamp').value;
+                requestData.timestamp = parseFloat(timestamp) || 0;
+                break;
+            default:
+                throw new Error('未知的处理类型');
+        }
+
+        // 发送请求
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || '请求失败');
+        }
+
+        // 显示结果
+        displayResults(data.results, currentFeature);
+        showAlert('处理完成！', 'success');
+
+    } catch (error) {
+        console.error('处理错误:', error);
+        showAlert(`处理失败: ${error.message}`, 'error');
+    } finally {
+        hideLoading();
+    }
 }
 
 // 处理视频
@@ -242,10 +357,9 @@ function displayResults(results, type) {
         const actionSection = document.createElement('div');
         actionSection.style.cssText = 'display: flex; flex-direction: column; gap: 8px; align-items: flex-end;';
         
-        if (result.status === 'success' && result.filepath) {
+        if (result.status === 'success' && (result.temp_filepath || result.filepath)) {
             // 下载按钮
-            const downloadBtn = document.createElement('a');
-            downloadBtn.href = `/download/${encodeURIComponent(result.filepath)}`;
+            const downloadBtn = document.createElement('button');
             downloadBtn.className = 'btn';
             downloadBtn.style.cssText = `
                 display: inline-flex;
@@ -261,9 +375,17 @@ function displayResults(results, type) {
                 transition: all 0.15s ease;
                 white-space: nowrap;
                 margin-bottom: 4px;
+                border: none;
+                cursor: pointer;
             `;
             downloadBtn.innerHTML = '<i class="fas fa-download"></i> 下载文件';
-            
+
+            // 添加点击事件
+            downloadBtn.addEventListener('click', () => {
+                const fileType = type === 'bgm' ? 'bgm' : (type === 'thumbnail' ? 'thumbnail' : 'video');
+                downloadTempFile(result, fileType);
+            });
+
             // 添加悬停效果
             downloadBtn.addEventListener('mouseenter', function() {
                 this.style.background = '#1a6bc7';
@@ -273,8 +395,37 @@ function displayResults(results, type) {
                 this.style.background = '#2383e2';
                 this.style.transform = 'translateY(0)';
             });
-            
+
             actionSection.appendChild(downloadBtn);
+
+            // 如果是临时文件，添加清理按钮
+            if (result.temp_filepath) {
+                const cleanupBtn = document.createElement('button');
+                cleanupBtn.className = 'btn btn-secondary';
+                cleanupBtn.style.cssText = `
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 6px 12px;
+                    background: #f1f1f0;
+                    color: #2d2d2d;
+                    border: 1px solid #e9e9e7;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    font-weight: 500;
+                    transition: all 0.15s ease;
+                    white-space: nowrap;
+                    cursor: pointer;
+                `;
+                cleanupBtn.innerHTML = '<i class="fas fa-trash"></i> 清理临时文件';
+
+                // 添加点击事件
+                cleanupBtn.addEventListener('click', () => {
+                    cleanupTempFile(result, type === 'bgm' ? 'bgm' : (type === 'thumbnail' ? 'thumbnail' : 'video'));
+                });
+
+                actionSection.appendChild(cleanupBtn);
+            }
         }
         
         // 组装完整卡片
@@ -285,7 +436,7 @@ function displayResults(results, type) {
     });
     
     // 添加批量下载按钮
-    const successResults = results.filter(result => result.status === 'success' && result.filepath);
+    const successResults = results.filter(result => result.status === 'success' && (result.temp_filepath || result.filepath));
     if (successResults.length > 1) {
         const batchDownloadContainer = document.createElement('div');
         batchDownloadContainer.style.cssText = `
@@ -447,7 +598,81 @@ function copyToClipboard(text) {
     });
 }
 
-// 下载文件
+// 下载临时文件
+async function downloadTempFile(result, fileType = 'video') {
+    try {
+        const response = await fetch('/api/download_temp_file', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                temp_filepath: result.temp_filepath || result.filepath,
+                download_filename: result.download_filename || getFileName(result.temp_filepath || result.filepath),
+                file_type: fileType
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(result.error || '下载失败');
+        }
+
+        // 创建下载链接
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = result.download_filename || getFileName(result.temp_filepath || result.filepath);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        showAlert('文件下载已开始', 'success');
+
+    } catch (error) {
+        console.error('下载错误:', error);
+        showAlert(`下载失败: ${error.message}`, 'error');
+    }
+}
+
+// 清理临时文件
+async function cleanupTempFile(result, fileType = 'video') {
+    try {
+        const response = await fetch('/api/cleanup_temp_file', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                temp_filepath: result.temp_filepath,
+                file_type: fileType
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('清理失败');
+        }
+
+        const data = await response.json();
+        showAlert(data.message || '临时文件已清理', 'success');
+
+        // 更新UI，移除清理按钮
+        const resultCard = document.querySelector(`[data-result-url="${result.url}"]`);
+        if (resultCard) {
+            const cleanupBtn = resultCard.querySelector('.cleanup-btn');
+            if (cleanupBtn) {
+                cleanupBtn.remove();
+            }
+        }
+
+    } catch (error) {
+        console.error('清理错误:', error);
+        showAlert(`清理失败: ${error.message}`, 'error');
+    }
+}
+
+// 下载文件（保留原有功能）
 function downloadFile(filepath) {
     window.open(`/download/${encodeURIComponent(filepath)}`, '_blank');
 }
@@ -532,7 +757,8 @@ function showBatchSaveDialog(successResults) {
             padding: 4px 0;
             border-bottom: 1px solid #e5e7eb;
         `;
-        fileItem.textContent = `${index + 1}. ${getFileName(result.filepath)}`;
+        const filename = result.download_filename || getFileName(result.temp_filepath || result.filepath);
+        fileItem.textContent = `${index + 1}. ${filename}`;
         fileList.appendChild(fileItem);
     });
     
@@ -600,26 +826,25 @@ function showBatchSaveDialog(successResults) {
 }
 
 // 开始批量下载
-function startBatchDownload(successResults) {
-    showAlert('开始批量下载，请在浏览器中选择保存位置', 'success');
-    
-    // 逐个打开下载链接，间隔500ms避免浏览器阻止
-    successResults.forEach((result, index) => {
-        setTimeout(() => {
-            const link = document.createElement('a');
-            link.href = `/download/${encodeURIComponent(result.filepath)}`;
-            link.download = getFileName(result.filepath);
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // 显示进度
-            if (index === successResults.length - 1) {
-                setTimeout(() => {
-                    showAlert('所有文件下载链接已打开，请检查浏览器下载', 'success');
-                }, 500);
-            }
-        }, index * 500);
-    });
+async function startBatchDownload(successResults) {
+    showAlert('开始批量下载，文件将逐个下载到您选择的位置', 'success');
+
+    // 逐个下载临时文件，间隔500ms避免浏览器阻止
+    for (let index = 0; index < successResults.length; index++) {
+        const result = successResults[index];
+
+        try {
+            await new Promise(resolve => setTimeout(resolve, 500)); // 延迟
+            await downloadTempFile(result);
+        } catch (error) {
+            console.error(`下载文件 ${index + 1} 失败:`, error);
+        }
+
+        // 显示进度
+        if (index === successResults.length - 1) {
+            setTimeout(() => {
+                showAlert('批量下载完成，请检查浏览器下载', 'success');
+            }, 500);
+        }
+    }
 }

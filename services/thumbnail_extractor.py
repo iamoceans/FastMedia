@@ -8,10 +8,11 @@ import requests
 
 class ThumbnailExtractor:
     def __init__(self):
-        self.output_dir = 'downloads/thumbnails'
-        self.temp_dir = tempfile.gettempdir()
+        # 使用临时目录存储缩略图文件
+        self.temp_dir = tempfile.mkdtemp(prefix='fastmedia_thumbnail_')
+        self.output_dir = 'downloads/thumbnails'  # 保留作为默认目录
         os.makedirs(self.output_dir, exist_ok=True)
-        
+
         # yt-dlp配置
         self.ydl_opts = {
             'outtmpl': os.path.join(self.temp_dir, '%(title)s.%(ext)s'),
@@ -52,54 +53,85 @@ class ThumbnailExtractor:
             if timestamp > duration:
                 timestamp = duration / 2 if duration > 0 else 0
             
-            output_filename = f"{self.sanitize_filename(title)}_thumbnail.jpg"
-            output_path = os.path.join(self.output_dir, output_filename)
-            
+            # 清理文件名
+            safe_title = "".join(c for c in title if c.isalnum() or c in (' ', '-', '_')).rstrip()
+            extractor = info.get('extractor', 'unknown')
+            output_filename = f"{extractor}-{safe_title}_thumbnail.jpg"
+            temp_output_path = os.path.join(self.temp_dir, output_filename)
+
             # 如果时间戳为0且有原始缩略图，优先下载原始缩略图
             if timestamp == 0 and thumbnail_url:
                 try:
-                    self.download_original_thumbnail(thumbnail_url, output_path)
+                    self.download_original_thumbnail(thumbnail_url, temp_output_path)
                     return {
                         'url': url,
                         'status': 'success',
                         'title': title,
-                        'filepath': output_path,
-                        'filesize': os.path.getsize(output_path),
+                        'temp_filepath': temp_output_path if os.path.exists(temp_output_path) else None,
+                        'download_filename': output_filename,
+                        'filesize': os.path.getsize(temp_output_path) if os.path.exists(temp_output_path) else 0,
                         'timestamp': 0,
-                        'method': 'original_thumbnail'
+                        'method': 'original_thumbnail',
+                        'platform': extractor
                     }
                 except:
                     # 如果下载原始缩略图失败，继续使用视频帧提取
                     pass
-            
+
             # 下载视频并提取帧
             with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
                 ydl.download([url])
                 temp_video_path = os.path.join(self.temp_dir, f"{title}.{info.get('ext', 'mp4')}")
-            
+
             # 从视频中提取帧
-            self.extract_frame_from_video(temp_video_path, output_path, timestamp)
-            
+            self.extract_frame_from_video(temp_video_path, temp_output_path, timestamp)
+
             return {
                 'url': url,
                 'status': 'success',
                 'title': title,
-                'filepath': output_path,
-                'filesize': os.path.getsize(output_path),
+                'temp_filepath': temp_output_path if os.path.exists(temp_output_path) else None,
+                'download_filename': output_filename,
+                'filesize': os.path.getsize(temp_output_path) if os.path.exists(temp_output_path) else 0,
                 'timestamp': timestamp,
-                'method': 'video_frame'
+                'method': 'video_frame',
+                'platform': extractor
             }
             
         except Exception as e:
             raise Exception(f'缩略图提取失败: {str(e)}')
-        
+
         finally:
-            # 清理临时文件
+            # 清理临时视频文件（但保留缩略图文件）
             if temp_video_path and os.path.exists(temp_video_path):
                 try:
                     os.remove(temp_video_path)
                 except:
                     pass
+
+    def cleanup_temp_file(self, filepath: str):
+        """清理临时文件"""
+        try:
+            if os.path.exists(filepath):
+                os.remove(filepath)
+                print(f"已清理缩略图临时文件: {filepath}")
+        except Exception as e:
+            print(f"清理缩略图临时文件失败: {str(e)}")
+
+    def get_temp_file_info(self, filepath: str) -> dict:
+        """获取临时文件信息"""
+        try:
+            if os.path.exists(filepath):
+                stat = os.stat(filepath)
+                return {
+                    'exists': True,
+                    'size': stat.st_size,
+                    'modified_time': stat.st_mtime
+                }
+            else:
+                return {'exists': False}
+        except Exception as e:
+            return {'exists': False, 'error': str(e)}
     
     def download_original_thumbnail(self, thumbnail_url: str, output_path: str):
         """下载原始缩略图"""
