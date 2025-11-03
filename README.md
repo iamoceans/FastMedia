@@ -322,8 +322,8 @@ Welcome to submit Issues and Pull Requests to improve the project:
 
 ## 📞 Contact
 
-- Project Homepage: [GitHub Repository](https://github.com/your-username/FastMedia)
-- Issue Reports: [Issues](https://github.com/your-username/FastMedia/issues)
+- Project Homepage: [GitHub Repository](https://github.com/iamoceans/FastMedia)
+- Issue Reports: [Issues](https://github.com/iamoceans/FastMedia/issues)
 - Email: colaandpopcorn@163.com
 
 ---

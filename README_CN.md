@@ -215,8 +215,8 @@ FastMedia/
 
 ## 📞 联系方式
 
-- 项目主页: [GitHub Repository](https://github.com/your-username/FastMedia)
-- 问题反馈: [Issues](https://github.com/your-username/FastMedia/issues)
+- 项目主页: [GitHub Repository](https://github.com/iamoceans/FastMedia)
+- 问题反馈: [Issues](https://github.com/iamoceans/FastMedia/issues)
 - 邮箱: colaandpopcorn@163.com
 
 ---
