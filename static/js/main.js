@@ -380,6 +380,9 @@ function displayResults(results, type) {
             `;
             downloadBtn.innerHTML = '<i class="fas fa-download"></i> 下载文件';
 
+            // 添加文件路径作为数据属性
+            downloadBtn.setAttribute('data-filepath', result.temp_filepath || result.filepath || '');
+
             // 添加点击事件
             downloadBtn.addEventListener('click', () => {
                 const fileType = type === 'bgm' ? 'bgm' : (type === 'thumbnail' ? 'thumbnail' : 'video');
@@ -601,20 +604,40 @@ function copyToClipboard(text) {
 // 下载临时文件
 async function downloadTempFile(result, fileType = 'video') {
     try {
+        const temp_filepath = result.temp_filepath || result.filepath;
+        const download_filename = result.download_filename || getFileName(temp_filepath);
+
+        // 获取下载按钮
+        const downloadBtn = document.querySelector(`[data-filepath*="${temp_filepath}"]`);
+
+        console.log('开始下载:', temp_filepath);
         const response = await fetch('/api/download_temp_file', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                temp_filepath: result.temp_filepath || result.filepath,
-                download_filename: result.download_filename || getFileName(result.temp_filepath || result.filepath),
+                temp_filepath: temp_filepath,
+                download_filename: download_filename,
                 file_type: fileType
             })
         });
 
         if (!response.ok) {
-            throw new Error(result.error || '下载失败');
+            let errorData;
+            try {
+                const responseText = await response.text();
+                console.error('Download failed with status:', response.status, 'Response text:', responseText);
+                if (responseText) {
+                    errorData = JSON.parse(responseText);
+                } else {
+                    errorData = {};
+                }
+            } catch (parseError) {
+                console.error('Failed to parse error response:', parseError);
+                errorData = { error: `下载失败 (${response.status})` };
+            }
+            throw new Error(errorData.error || `下载失败 (${response.status})`);
         }
 
         // 创建下载链接
@@ -622,7 +645,7 @@ async function downloadTempFile(result, fileType = 'video') {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = result.download_filename || getFileName(result.temp_filepath || result.filepath);
+        a.download = download_filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -630,9 +653,30 @@ async function downloadTempFile(result, fileType = 'video') {
 
         showAlert('文件下载已开始', 'success');
 
+        // 下载成功，恢复按钮状态允许再次下载
+        if (downloadBtn) {
+            downloadBtn.disabled = false;
+            downloadBtn.innerHTML = '<i class="fas fa-download"></i> 下载文件';
+        }
+
     } catch (error) {
         console.error('下载错误:', error);
-        showAlert(`下载失败: ${error.message}`, 'error');
+        const errorMessage = error.message || '未知错误';
+
+        if (errorMessage.includes('文件不存在或已被清理')) {
+            showAlert('文件已过期或被清理，请重新处理视频', 'error');
+            // 按钮已经设置为过期状态，无需修改
+        } else if (errorMessage.includes('下载失败 (404)')) {
+            showAlert('文件已过期或被清理，请重新处理视频', 'error');
+            // 按钮已经设置为过期状态，无需修改
+        } else {
+            showAlert(`下载失败: ${errorMessage}`, 'error');
+            // 其他错误，恢复按钮状态让用户可以重试
+            if (downloadBtn) {
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i> 重新下载';
+            }
+        }
     }
 }
 

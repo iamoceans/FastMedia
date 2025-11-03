@@ -223,6 +223,7 @@ def download_temp_file():
         else:
             mimetype = 'video/mp4'
 
+        
         return send_file(
             temp_filepath,
             as_attachment=True,
@@ -246,6 +247,8 @@ def cleanup_temp_file():
                 bgm_extractor.cleanup_temp_file(temp_filepath)
             elif file_type == 'thumbnail':
                 thumbnail_extractor.cleanup_temp_file(temp_filepath)
+            elif file_type == 'xiaohongshu':
+                video_downloader.xiaohongshu_downloader.cleanup_temp_file(temp_filepath)
             else:
                 video_downloader.cleanup_temp_file(temp_filepath)
             return jsonify({'status': 'success', 'message': '文件已清理'})

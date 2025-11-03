@@ -7,8 +7,13 @@ from .kuaishou_downloader import KuaishouDownloader
 
 class BGMExtractor:
     def __init__(self):
-        # 使用临时目录存储BGM文件
-        self.temp_dir = tempfile.mkdtemp(prefix='fastmedia_bgm_')
+        # 使用固定的临时目录存储BGM文件，避免Flask重启时路径失效
+        import os
+
+        # 使用固定的临时目录，而不是每次创建新的
+        self.temp_dir = os.path.join(tempfile.gettempdir(), 'fastmedia_bgm_temp')
+        os.makedirs(self.temp_dir, exist_ok=True)
+
         self.output_dir = 'downloads/bgm'  # 保留作为默认目录
         os.makedirs(self.output_dir, exist_ok=True)
 

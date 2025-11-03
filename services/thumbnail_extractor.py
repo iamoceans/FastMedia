@@ -8,8 +8,13 @@ import requests
 
 class ThumbnailExtractor:
     def __init__(self):
-        # 使用临时目录存储缩略图文件
-        self.temp_dir = tempfile.mkdtemp(prefix='fastmedia_thumbnail_')
+        # 使用固定的临时目录存储缩略图文件，避免Flask重启时路径失效
+        import os
+
+        # 使用固定的临时目录，而不是每次创建新的
+        self.temp_dir = os.path.join(tempfile.gettempdir(), 'fastmedia_thumbnail_temp')
+        os.makedirs(self.temp_dir, exist_ok=True)
+
         self.output_dir = 'downloads/thumbnails'  # 保留作为默认目录
         os.makedirs(self.output_dir, exist_ok=True)
 

@@ -48,6 +48,43 @@
             line-height: 1.5;
         }
 
+        .supported-platforms {
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        .platform-title {
+            font-size: 1rem;
+            color: #2d2d2d;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .platform-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .platform-tag {
+            background: linear-gradient(135deg, #2383e2, #1a6bc7);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(35, 131, 226, 0.2);
+        }
+
+        .platform-tag:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(35, 131, 226, 0.3);
+            background: linear-gradient(135deg, #1a6bc7, #1558b3);
+        }
+
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -439,6 +476,23 @@
                 font-size: 1rem;
             }
 
+            .supported-platforms {
+                margin-top: 20px;
+            }
+
+            .platform-title {
+                font-size: 0.9rem;
+            }
+
+            .platform-list {
+                gap: 6px;
+            }
+
+            .platform-tag {
+                font-size: 0.8rem;
+                padding: 4px 10px;
+            }
+
             .features-grid {
                 grid-template-columns: 1fr;
                 gap: 16px;
@@ -489,6 +543,18 @@
         <div class="header">
             <h1>FastMedia</h1>
             <p>这是一个媒体处理库，提供视频下载、BGM提取、封面提取等功能</p>
+            <div class="supported-platforms">
+                <p class="platform-title">🌍 支持的平台：</p>
+                <div class="platform-list">
+                    <span class="platform-tag">抖音</span>
+                    <span class="platform-tag">TikTok</span>
+                    <span class="platform-tag">B站</span>
+                    <span class="platform-tag">YouTube</span>
+                    <span class="platform-tag">Twitter/X</span>
+                    <span class="platform-tag">快手</span>
+                    <span class="platform-tag">小红书</span>
+                </div>
+            </div>
         </div>
 
         <!-- 常驻URL输入区域 -->
@@ -496,6 +562,9 @@
             <div class="url-input-header">
                 <h3>视频URL输入</h3>
                 <p>输入一个或多个视频URL，用逗号分隔</p>
+                <p style="font-size: 0.85rem; color: #999; margin-top: 8px;">
+                    <strong>注意：</strong>小红书链接需要包含完整参数（如：source、xhsshare、xsec_token等）才能正常访问，请直接复制分享的完整链接
+                </p>
             </div>
             <div class="url-input-container">
                 <textarea class="input-field textarea-field" id="global-urls" placeholder="请输入视频URL，多个URL用逗号分隔&#10;例如：https://www.douyin.com/video/xxx, https://www.youtube.com/watch?v=xxx"></textarea>
@@ -514,7 +583,7 @@
                     <i class="fas fa-download"></i>
                 </div>
                 <div class="feature-title">批量视频下载</div>
-                <div class="feature-description">支持抖音、TikTok、B站、YouTube、Twitter、快手等平台的无水印视频下载</div>
+                <div class="feature-description">支持抖音、TikTok、B站、YouTube、Twitter、快手、小红书等平台的无水印视频下载</div>
             </div>
 
             <div class="feature-card" data-feature="bgm">
@@ -588,6 +657,6 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=2.1"></script>
 </body>
 </html>

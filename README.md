@@ -5,16 +5,19 @@
 ## ✨ Core Features
 
 ### 🎥 Batch Video Download (Watermark-Free)
-- **Multi-platform Support**: Douyin, TikTok, Bilibili, YouTube, Twitter, Kuaishou, etc.
+- **Multi-platform Support**: Douyin, TikTok, Bilibili, YouTube, Twitter, Kuaishou, **Xiaohongshu**, etc.
 - **Batch Processing**: Quick download of multiple videos via comma-separated URL lists
 - **Smart Parsing**: Automatic platform recognition and optimal download strategy selection
 - **Quality Control**: Support for resolutions up to 720p, balancing quality and storage space
+- **Intelligent URL Handling**: Automatic parameter preservation for platform-specific access requirements
+- **Temporary Storage**: Files are stored in temporary directories with user-controlled download
+- **Persistent Access**: Fixed temporary directories ensure files remain accessible across server restarts
 
 ### 🎵 Batch Video BGM Extraction
 - **High-Quality Audio**: 192kbps audio quality output
 - **Format Support**: Automatic selection of optimal audio formats
 - **Batch Processing**: Simultaneous BGM extraction from multiple videos
-- **Platform Compatibility**: Support for all mainstream video platforms
+- **Platform Compatibility**: Support for all mainstream video platforms including Xiaohongshu
 
 
 
@@ -22,7 +25,7 @@
 - **Multiple Modes**: Support for extracting first frame or specific timestamp frames
 - **Standard Size**: 320x180 (16:9 ratio) high-quality thumbnails
 - **Format Optimization**: 90% quality JPEG format output
-- **Batch Generation**: Process multiple video thumbnails at once
+- **Batch Generation**: Process multiple video thumbnails at once, including Xiaohongshu videos
 
 ## 🏗️ Technical Architecture
 
@@ -41,6 +44,7 @@
 - `BGMExtractor` - BGM extraction service
 - `ThumbnailExtractor` - Thumbnail extraction service
 - `KuaishouDownloader` - Kuaishou-specific downloader
+- `XiaohongshuDownloader` - Xiaohongshu-specific downloader
 
 ## 🚀 Quick Start
 
@@ -76,6 +80,33 @@ The project supports multi-environment configuration, adjustable in `config.py`:
 - **Development Environment**: `DevelopmentConfig`
 - **Production Environment**: `ProductionConfig`
 - **Testing Environment**: `TestingConfig`
+
+### Platform-Specific Usage Notes
+
+#### 🔴 Xiaohongshu (小红书) URLs
+
+Xiaohongshu links require specific parameters for proper access:
+
+❌ **Incorrect (will fail):**
+```
+https://www.xiaohongshu.com/discovery/item/68fc7476000000000700f3ca?
+```
+
+✅ **Correct (will work):**
+```
+https://www.xiaohongshu.com/discovery/item/68fc7476000000000700f3ca?source=webshare&xhsshare=pc_web&xsec_token=AB2z9H4LdGP6Rne6M6DUdbCbBaP20JxrM_hY5ToFmMgGY=&xsec_source=pc_share
+```
+
+**How to get the correct URL:**
+1. Use the official share function in the Xiaohongshu app
+2. Copy the complete share link (contains all required parameters)
+3. Paste the full link into FastMedia
+
+**Required Parameters:**
+- `source=webshare`
+- `xhsshare=pc_web`
+- `xsec_token=[unique_token]`
+- `xsec_source=pc_share`
 
 ### Interface Modules
 
@@ -147,6 +178,7 @@ Content-Type: application/json
 | YouTube | youtube.com, youtu.be | ✅ Supported | Multi-resolution options |
 | Twitter/X | twitter.com, x.com | ✅ Supported | Videos and GIFs |
 | Kuaishou | kuaishou.com | ✅ Supported | Dedicated parser |
+| Xiaohongshu | xiaohongshu.com, xhslink.com | ✅ Supported | Requires full share URL with parameters |
 
 ## 📁 Directory Structure
 
@@ -162,7 +194,8 @@ FastMedia/
 │   ├── video_downloader.py
 │   ├── bgm_extractor.py
 │   ├── thumbnail_extractor.py
-│   └── kuaishou_downloader.py
+│   ├── kuaishou_downloader.py
+│   └── xiaohongshu_downloader.py
 ├── static/              # Static resources
 │   ├── css/
 │   │   └── style.css
@@ -194,8 +227,9 @@ FastMedia/
 
 ### Technical Limitations
 - Some platforms may have anti-crawling mechanisms affecting download success rates
-- Platforms like Kuaishou may require special handling (dedicated parser provided)
+- Platforms like Kuaishou and Xiaohongshu require special handling (dedicated parsers provided)
 - Some private or restricted videos cannot be downloaded
+- **Xiaohongshu URLs require complete share parameters** (source, xhsshare, xsec_token, xsec_source) for access
 
 ## 🤝 Contributing
 
