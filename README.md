@@ -18,6 +18,8 @@
 - **Format Support**: Automatic selection of optimal audio formats
 - **Batch Processing**: Simultaneous BGM extraction from multiple videos
 - **Platform Compatibility**: Support for all mainstream video platforms including Xiaohongshu
+- **Temporary Storage**: BGM files stored temporarily with user-controlled download
+- **Flexible Access**: Persistent access to extracted audio files
 
 
 
@@ -26,6 +28,8 @@
 - **Standard Size**: 320x180 (16:9 ratio) high-quality thumbnails
 - **Format Optimization**: 90% quality JPEG format output
 - **Batch Generation**: Process multiple video thumbnails at once, including Xiaohongshu videos
+- **Temporary Storage**: Thumbnail files stored temporarily with user-controlled download
+- **Custom Timestamps**: Extract frames at any specific time point
 
 ## 🏗️ Technical Architecture
 
@@ -40,11 +44,11 @@
 - **Environment**: python-dotenv - Environment variable management
 
 ### Core Service Modules
-- `VideoDownloader` - Video download service
-- `BGMExtractor` - BGM extraction service
-- `ThumbnailExtractor` - Thumbnail extraction service
-- `KuaishouDownloader` - Kuaishou-specific downloader
-- `XiaohongshuDownloader` - Xiaohongshu-specific downloader
+- `VideoDownloader` - Video download service with multi-platform support
+- `BGMExtractor` - BGM extraction service with audio processing
+- `ThumbnailExtractor` - Thumbnail extraction service with frame capture
+- `KuaishouDownloader` - Kuaishou-specific downloader with optimized parsing
+- `XiaohongshuDownloader` - Xiaohongshu-specific downloader with parameter preservation
 
 ## 🚀 Quick Start
 
@@ -108,6 +112,30 @@ https://www.xiaohongshu.com/discovery/item/68fc7476000000000700f3ca?source=websh
 - `xsec_token=[unique_token]`
 - `xsec_source=pc_share`
 
+### 🌐 Modern Web Interface
+
+FastMedia features a modern, responsive web interface designed for optimal user experience:
+
+#### 📋 Persistent URL Input
+- **Always-Visible**: URL input area remains fixed at the top of the page
+- **Batch Support**: Paste multiple URLs separated by commas for batch processing
+- **Platform Display**: Visual showcase of all supported platforms with modern tags
+
+#### 🎯 Intuitive Feature Selection
+- **Card-Based Layout**: Three main functions displayed as interactive cards
+- **Visual Feedback**: Hover effects and selection states for better UX
+- **Real-time Processing**: Live progress indicators and status updates
+
+#### 📱 Responsive Design
+- **Mobile Optimized**: Fully responsive layout that works on all devices
+- **Touch-Friendly**: Large tap targets and mobile-optimized controls
+- **Progressive Enhancement**: Graceful degradation for older browsers
+
+#### 🎨 Modern Aesthetics
+- **Clean Design**: Minimalist interface with focus on functionality
+- **Platform Tags**: Visual representation of supported platforms
+- **Smooth Animations**: Subtle transitions and micro-interactions
+
 ### Interface Modules
 
 #### 📥 Task Input Area
@@ -164,7 +192,58 @@ Content-Type: application/json
 
 {
   "urls": "https://example.com/video1",
-  "timestamp": "00:00:05"
+  "timestamp": 5
+}
+```
+
+### Temporary File Management
+```http
+POST /api/download_temp_file
+Content-Type: application/json
+
+{
+  "temp_filepath": "C:\\path\\to\\temp\\file.mp4",
+  "download_filename": "video.mp4",
+  "file_type": "video"
+}
+```
+
+```http
+POST /api/check_temp_file
+Content-Type: application/json
+
+{
+  "temp_filepath": "C:\\path\\to\\temp\\file.mp4",
+  "file_type": "video"
+}
+```
+
+```http
+POST /api/cleanup_temp_file
+Content-Type: application/json
+
+{
+  "temp_filepath": "C:\\path\\to\\temp\\file.mp4",
+  "file_type": "video"
+}
+```
+
+### Platform Testing
+```http
+POST /api/check_bilibili_video
+Content-Type: application/json
+
+{
+  "url": "https://www.bilibili.com/video/BV1234567890"
+}
+```
+
+```http
+POST /api/test_bilibili
+Content-Type: application/json
+
+{
+  "url": "https://www.bilibili.com/video/BV1234567890"
 }
 ```
 
